@@ -90,11 +90,11 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: ResponsiveLayout(
             maxWidth: 480,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Center(
               child: SingleChildScrollView(
                 child: Form(
@@ -108,48 +108,54 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Container(
                           width: 80,
                           height: 80,
-                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite,
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                                color: AppColors.borderLight, width: 1.5),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.brandPurple
-                                    .withValues(alpha: 0.12),
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                                 blurRadius: 20,
-                                offset: const Offset(0, 6),
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
-                          child: Image.asset(
-                            'assets/images/placfy_logo.png',
-                            fit: BoxFit.contain,
+                          child: Center(
+                            child: Text(
+                              'P',
+                              style: GoogleFonts.inter(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 32),
                       Text(
-                        'Welcome to Placfy',
+                        'Welcome Back',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          fontSize: 24,
+                          fontSize: 28,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.5,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
-                        'Sign in to access your autonomous HR workspace',
+                        'Sign in to continue',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 32),
 
                       // Test Credentials Card
                       Container(
@@ -229,41 +235,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // Email Field
                       Text(
-                        'Work Email',
+                        'Email',
                         style: GoogleFonts.inter(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        style: const TextStyle(color: Color(0xFF1E293B)),
                         decoration: InputDecoration(
-                          hintText: 'name@company.com',
+                          hintText: 'Enter your email',
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                           prefixIcon: const Icon(
                             Icons.email_outlined,
                             size: 20,
-                            color: AppColors.textMuted,
+                            color: Color(0xFF94A3B8),
                           ),
                           filled: true,
-                          fillColor: AppColors.surfaceWhite,
+                          fillColor: const Color(0xFFF8FAFC),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                                color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                                color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: AppColors.brandPurple,
-                              width: 1.5,
+                              color: Color(0xFF6366F1),
+                              width: 2,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -279,27 +285,29 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
 
                       // Password Field
                       Text(
                         'Password',
                         style: GoogleFonts.inter(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
+                        style: const TextStyle(color: Color(0xFF1E293B)),
                         decoration: InputDecoration(
-                          hintText: '••••••••••••',
+                          hintText: 'Enter your password',
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                           prefixIcon: const Icon(
                             Icons.lock_outline_rounded,
                             size: 20,
-                            color: AppColors.textMuted,
+                            color: Color(0xFF94A3B8),
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -307,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
                               size: 20,
-                              color: AppColors.textMuted,
+                              color: const Color(0xFF94A3B8),
                             ),
                             onPressed: () {
                               setState(() {
@@ -316,22 +324,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           filled: true,
-                          fillColor: AppColors.surfaceWhite,
+                          fillColor: const Color(0xFFF8FAFC),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                                color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                                color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: AppColors.brandPurple,
-                              width: 1.5,
+                              color: Color(0xFF6366F1),
+                              width: 2,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -344,21 +350,36 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Forgot Password?',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF6366F1),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
                       // Submit Button
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           final isLoading = state is AuthLoading;
                           return SizedBox(
-                            height: 50,
+                            height: 54,
                             child: ElevatedButton(
                               onPressed: isLoading ? null : _submitLogin,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.brandPurple,
+                                backgroundColor: const Color(0xFF6366F1),
                                 foregroundColor: Colors.white,
                                 disabledBackgroundColor:
-                                    AppColors.brandPurple.withValues(alpha: 0.6),
+                                    const Color(0xFF6366F1).withValues(alpha: 0.5),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -366,8 +387,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: isLoading
                                   ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
+                                      width: 24,
+                                      height: 24,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
                                         valueColor:
@@ -376,11 +397,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     )
                                   : Text(
-                                      'Sign In',
+                                      'Login',
                                       style: GoogleFonts.inter(
-                                        fontSize: 15,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.2,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                             ),
@@ -392,10 +413,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Footer note
                       Center(
                         child: Text(
-                          'Powered by Placfy Autonomous HRMS Core',
+                          'Powered by Placfy',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: const Color(0xFF94A3B8),
                           ),
                         ),
                       ),

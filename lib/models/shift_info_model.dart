@@ -12,6 +12,14 @@ class ShiftInfoModel extends Equatable {
   final String? checkOutTime;
   final String effectiveHours;
   final String policyName;
+  final bool hasPolicy;
+  final bool isHoliday;
+  final String? holidayName;
+  final bool isWeekOff;
+  final List<String> enabledModes;
+  final bool requireSelfie;
+  final bool requireGeo;
+  final bool allowRemoteCheckin;
 
   const ShiftInfoModel({
     required this.date,
@@ -25,6 +33,14 @@ class ShiftInfoModel extends Equatable {
     this.checkOutTime,
     this.effectiveHours = '0.00',
     this.policyName = 'Standard Attendance Policy',
+    this.hasPolicy = true,
+    this.isHoliday = false,
+    this.holidayName,
+    this.isWeekOff = false,
+    this.enabledModes = const ['standard'],
+    this.requireSelfie = false,
+    this.requireGeo = false,
+    this.allowRemoteCheckin = true,
   });
 
   String get formattedHours {
@@ -52,6 +68,9 @@ class ShiftInfoModel extends Equatable {
   }
 
   factory ShiftInfoModel.fromJson(Map<String, dynamic> json) {
+    final enabledModesList = json['enabled_modes'] as List<dynamic>?;
+    final modes = enabledModesList?.map((e) => e.toString()).toList() ?? ['standard'];
+
     return ShiftInfoModel(
       date: json['date'] as String? ?? DateTime.now().toIso8601String().substring(0, 10),
       shiftName: json['shift_name'] as String? ?? 'General Shift',
@@ -64,6 +83,14 @@ class ShiftInfoModel extends Equatable {
       checkOutTime: json['check_out_time'] as String?,
       effectiveHours: json['effective_hours']?.toString() ?? '0.00',
       policyName: json['policy_name'] as String? ?? 'Standard Attendance Policy',
+      hasPolicy: json['has_policy'] as bool? ?? true,
+      isHoliday: json['is_holiday'] as bool? ?? false,
+      holidayName: json['holiday_name'] as String?,
+      isWeekOff: json['is_week_off'] as bool? ?? false,
+      enabledModes: modes,
+      requireSelfie: json['require_selfie'] as bool? ?? false,
+      requireGeo: json['require_geo'] as bool? ?? false,
+      allowRemoteCheckin: json['allow_remote_checkin'] as bool? ?? true,
     );
   }
 
@@ -80,5 +107,13 @@ class ShiftInfoModel extends Equatable {
         checkOutTime,
         effectiveHours,
         policyName,
+        hasPolicy,
+        isHoliday,
+        holidayName,
+        isWeekOff,
+        enabledModes,
+        requireSelfie,
+        requireGeo,
+        allowRemoteCheckin,
       ];
 }

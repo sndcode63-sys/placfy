@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../blocs/navigation/navigation_bloc.dart';
-import '../blocs/preferences/preferences_bloc.dart';
-import '../core/theme/app_colors.dart';
-import '../core/widgets/pulse_indicator.dart';
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/auth/auth_state.dart';
 import '../core/widgets/responsive_layout.dart';
 import 'dashboard/employee_dashboard_view.dart';
 import 'attendance/attendance_leaves_view.dart';
-import 'payroll/payroll_view.dart';
-import 'talent/talent_pipeline_view.dart';
-import 'showcase/placfy_showcase_view.dart';
 import 'profile/profile_view.dart';
 
 class MainNavigationScreen extends StatelessWidget {
@@ -24,147 +21,106 @@ class MainNavigationScreen extends StatelessWidget {
         final List<Widget> screens = [
           const EmployeeDashboardView(),
           const AttendanceLeavesView(),
-          const PayrollView(),
-          const TalentPipelineView(),
-          const PlacfyShowcaseView(),
+          const Center(child: Text('Summary Coming Soon')),
           const ProfileView(),
         ];
 
         final List<String> screenTitles = [
-          'Workspace Dashboard',
-          'Attendance & Leaves',
-          'Autonomous Payroll',
-          'AI Talent Screening',
-          'Placfy Cloud Platform',
-          'Employee ID & Settings',
+          'Home',
+          'History',
+          'Summary',
+          'Profile',
         ];
 
         return Scaffold(
-          backgroundColor: AppColors.backgroundLight,
+          backgroundColor: const Color(0xFFF8FAFC),
           appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(60),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceCard,
-                border: Border(
-                  bottom: BorderSide(color: AppColors.borderLight, width: 1.0),
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
+            preferredSize: const Size.fromHeight(70),
+            child: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              title: Row(
+                children: [
+                  // Placfy Logo with Gradient
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'P',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Placfy Official Logo
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/placfy_logo.png',
-                          width: 32,
-                          height: 32,
-                          fit: BoxFit.cover,
+                      Text(
+                        'Placfy',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'PLACFY',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.brandPurpleLight,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: AppColors.brandPurple.withValues(alpha: 0.2)),
-                                ),
-                                child: const Text(
-                                  'AI HRMS',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.brandPurple,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            screenTitles[currentIndex],
-                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-
-                      // Relational Mesh Live badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.statusSuccessBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.statusSuccessBorder),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PulseIndicator(color: AppColors.statusSuccess, size: 6),
-                            SizedBox(width: 6),
-                            Text(
-                              'Live Mesh',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.statusSuccess,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 8),
-
-                      // Currency Switcher Quick Button
-                      BlocBuilder<PreferencesBloc, PreferencesState>(
-                        builder: (context, prefState) {
-                          return GestureDetector(
-                            onTap: () {
-                              final next = prefState.currency == 'INR' ? 'USD' : 'INR';
-                              context.read<PreferencesBloc>().add(SetCurrencyEvent(next));
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceSubtle,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.borderLight),
-                              ),
-                              child: Text(
-                                prefState.currency == 'INR' ? '₹ INR' : '\$ USD',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.brandPurple,
-                                ),
-                              ),
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, authState) {
+                          final workspace = authState is Authenticated
+                              ? authState.activeWorkspace.name
+                              : 'Workspace';
+                          return Text(
+                            workspace,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
                             ),
                           );
                         },
                       ),
                     ],
                   ),
-                ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.notifications_outlined,
+                          size: 18,
+                          color: Color(0xFF64748B),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '3',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -180,62 +136,70 @@ class MainNavigationScreen extends StatelessWidget {
               },
               child: KeyedSubtree(
                 key: ValueKey<int>(currentIndex),
-                child: screens[currentIndex],
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 90),
+                  child: screens[currentIndex],
+                ),
               ),
             ),
           ),
-          bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceCard,
-              border: Border(
-                top: BorderSide(color: AppColors.borderLight, width: 1.0),
-              ),
-            ),
-            child: SafeArea(
-              child: BottomNavigationBar(
-                currentIndex: currentIndex,
-                onTap: (index) {
-                  context.read<NavigationBloc>().add(ChangeTabEvent(index));
-                },
-                backgroundColor: AppColors.surfaceCard,
-                selectedItemColor: AppColors.brandPurple,
-                unselectedItemColor: AppColors.textSecondary,
-                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 10),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10),
-                type: BottomNavigationBarType.fixed,
-                elevation: 0,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.dashboard_outlined),
-                    activeIcon: Icon(Icons.dashboard, color: AppColors.brandPurple),
-                    label: 'Dashboard',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.schedule_outlined),
-                    activeIcon: Icon(Icons.schedule, color: AppColors.brandPurple),
-                    label: 'Attendance',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.receipt_outlined),
-                    activeIcon: Icon(Icons.receipt, color: AppColors.brandPurple),
-                    label: 'Payroll',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.groups_outlined),
-                    activeIcon: Icon(Icons.groups, color: AppColors.brandPurple),
-                    label: 'AI Talent',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.language_outlined),
-                    activeIcon: Icon(Icons.language, color: AppColors.brandPurple),
-                    label: 'Showcase',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person, color: AppColors.brandPurple),
-                    label: 'Profile',
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: const Color(0xFFE2E8F0),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: SafeArea(
+                  child: BottomNavigationBar(
+                    currentIndex: currentIndex,
+                    onTap: (index) {
+                      context.read<NavigationBloc>().add(ChangeTabEvent(index));
+                    },
+                    backgroundColor: Colors.transparent,
+                    selectedItemColor: const Color(0xFF6366F1),
+                    unselectedItemColor: const Color(0xFF64748B),
+                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 10),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10),
+                    type: BottomNavigationBarType.fixed,
+                    elevation: 0,
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home_outlined),
+                        activeIcon: Icon(Icons.home),
+                        label: 'Home',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.history_outlined),
+                        activeIcon: Icon(Icons.history),
+                        label: 'History',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.summarize_outlined),
+                        activeIcon: Icon(Icons.summarize),
+                        label: 'Summary',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person_outline),
+                        activeIcon: Icon(Icons.person),
+                        label: 'Profile',
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

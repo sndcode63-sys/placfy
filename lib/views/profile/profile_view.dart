@@ -4,12 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../../blocs/preferences/preferences_bloc.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/responsive_layout.dart';
-import '../../core/widgets/stat_badge.dart';
 import '../../models/workspace_model.dart';
 import '../auth/login_screen.dart';
 import '../auth/workspace_select_screen.dart';
@@ -21,21 +16,21 @@ class ProfileView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppColors.surfaceWhite,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Sign Out',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
             fontSize: 18,
-            color: AppColors.textPrimary,
+            color: const Color(0xFF1E293B),
           ),
         ),
         content: Text(
-          'Are you sure you want to log out from Placfy? Your session will be terminated.',
+          'Are you sure you want to log out from Placfy?',
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: AppColors.textSecondary,
+            color: const Color(0xFF64748B),
           ),
         ),
         actions: [
@@ -44,7 +39,7 @@ class ProfileView extends StatelessWidget {
             child: Text(
               'Cancel',
               style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
+                color: const Color(0xFF64748B),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -55,12 +50,9 @@ class ProfileView extends StatelessWidget {
               context.read<AuthBloc>().add(const LogoutRequested());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.statusError,
+              backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
             ),
             child: Text(
               'Log Out',
@@ -102,7 +94,8 @@ class ProfileView extends StatelessWidget {
           final userId = user != null ? '#USR-${user.id}' : '#USR-52';
 
           return RefreshIndicator(
-            color: AppColors.brandPurple,
+            color: const Color(0xFF6366F1),
+            backgroundColor: Colors.white,
             onRefresh: () async {
               context.read<AuthBloc>().add(const RefreshProfileData());
             },
@@ -115,13 +108,12 @@ class ProfileView extends StatelessWidget {
                     children: [
                       // Live Digital ID Card
                       Container(
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceCard,
-                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppColors.borderLight, width: 1.0),
-                          boxShadow: AppColors.cardShadow,
+                              color: const Color(0xFFE2E8F0), width: 1.0),
                         ),
                         child: Column(
                           children: [
@@ -131,7 +123,7 @@ class ProfileView extends StatelessWidget {
                                 Row(
                                   children: [
                                     const Icon(Icons.badge_outlined,
-                                        color: AppColors.brandPurple, size: 18),
+                                        color: Color(0xFF6366F1), size: 18),
                                     const SizedBox(width: 8),
                                     Text(
                                       'DIGITAL WORKFORCE ID',
@@ -139,42 +131,56 @@ class ProfileView extends StatelessWidget {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.8,
-                                        color: AppColors.brandPurple,
+                                        color: const Color(0xFF6366F1),
                                       ),
                                     ),
                                   ],
                                 ),
-                                StatBadge(
-                                    label: userId,
-                                    color: AppColors.brandPurple),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                    borderRadius:
+                                        BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    userId,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF6366F1),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             Row(
                               children: [
                                 Container(
-                                  width: 56,
-                                  height: 56,
+                                  width: 60,
+                                  height: 60,
                                   decoration: BoxDecoration(
-                                    color: AppColors.brandPurpleLight,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.brandPurple
-                                          .withValues(alpha: 0.3),
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
+                                    shape: BoxShape.circle,
                                   ),
                                   child: Center(
                                     child: Text(
                                       initials,
                                       style: GoogleFonts.inter(
-                                        color: AppColors.brandPurple,
-                                        fontSize: 20,
+                                        color: Colors.white,
+                                        fontSize: 22,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -183,36 +189,34 @@ class ProfileView extends StatelessWidget {
                                       Text(
                                         fullName,
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w800,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        email,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: AppColors.textSecondary,
+                                          color: const Color(0xFF1E293B),
                                         ),
                                       ),
                                       const SizedBox(height: 4),
+                                      Text(
+                                        email,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 2),
+                                            horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFECFDF5),
+                                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(6),
-                                          border: Border.all(
-                                              color: const Color(0xFFA7F3D0)),
                                         ),
                                         child: Text(
                                           role,
                                           style: GoogleFonts.inter(
-                                            fontSize: 10,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w700,
-                                            color: const Color(0xFF047857),
+                                            color: const Color(0xFF6366F1),
                                           ),
                                         ),
                                       ),
@@ -221,61 +225,41 @@ class ProfileView extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const Divider(
-                                height: 24, color: AppColors.borderLight),
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Authentication Context:',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                Text(
-                                  'JWT • Verified Bearer',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: AppColors.statusSuccess,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
 
                       // Assigned Shift & Attendance
                       Text(
-                        'Assigned Shift & Status',
+                        'Work Shift & Schedule',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
 
-                      GlassCard(
-                        margin: EdgeInsets.zero,
+                      Container(
                         padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.brandPurple
-                                    .withValues(alpha: 0.1),
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.access_time_filled_rounded,
-                                color: AppColors.brandPurple,
+                                color: Color(0xFF6366F1),
                                 size: 22,
                               ),
                             ),
@@ -289,50 +273,25 @@ class ProfileView extends StatelessWidget {
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: const Color(0xFF1E293B),
                                     ),
                                   ),
-                                  const SizedBox(height: 3),
+                                  const SizedBox(height: 4),
                                   Text(
                                     'Hours: ${shift?.formattedHours ?? "09:00 - 18:00"}',
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
-                                      color: AppColors.textSecondary,
+                                      color: const Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: shift?.hasCheckedIn == true
-                                    ? const Color(0xFFECFDF5)
-                                    : const Color(0xFFFFFBEB),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: shift?.hasCheckedIn == true
-                                      ? const Color(0xFFA7F3D0)
-                                      : const Color(0xFFFDE68A),
-                                ),
-                              ),
-                              child: Text(
-                                shift?.statusDisplay ?? 'Not Marked Yet',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: shift?.hasCheckedIn == true
-                                      ? const Color(0xFF047857)
-                                      : const Color(0xFFB45309),
-                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
 
                       // Workspace & Entity Section
                       Text(
@@ -340,15 +299,19 @@ class ProfileView extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
 
                       // Workspace Card
-                      GlassCard(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.all(14),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
                         child: InkWell(
                           onTap: workspaces.length > 1
                               ? () {
@@ -365,34 +328,34 @@ class ProfileView extends StatelessWidget {
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surfaceSubtle,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.business_outlined,
-                                    color: AppColors.brandPurple, size: 20),
+                                    color: Color(0xFF6366F1), size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       workspace?.name ?? 'Testing Workspace',
                                       style: GoogleFonts.inter(
-                                        fontSize: 13,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: const Color(0xFF1E293B),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       'slug: ${workspace?.slug ?? "testing-workspace"}',
                                       style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                        color: const Color(0xFF64748B),
                                       ),
                                     ),
                                   ],
@@ -401,9 +364,9 @@ class ProfileView extends StatelessWidget {
                               if (workspaces.length > 1)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
+                                      horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surfaceSubtle,
+                                    color: const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -411,7 +374,7 @@ class ProfileView extends StatelessWidget {
                                     style: GoogleFonts.inter(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.brandPurple,
+                                      color: const Color(0xFF6366F1),
                                     ),
                                   ),
                                 ),
@@ -420,44 +383,48 @@ class ProfileView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
 
                       // Legal Entity Card
-                      GlassCard(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.all(14),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
-                                borderRadius: BorderRadius.circular(8),
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(Icons.account_balance_outlined,
-                                  color: Color(0xFF2563EB), size: 20),
+                                  color: Color(0xFF6366F1), size: 20),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     entity?.name ??
                                         'Placfy Testing India Pvt Ltd',
                                     style: GoogleFonts.inter(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: const Color(0xFF1E293B),
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Code: ${entity?.entityCode ?? "PLCFY-IND"} • ID: ${entity?.id ?? 5}',
                                     style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                      color: const Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
@@ -465,17 +432,17 @@ class ProfileView extends StatelessWidget {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFECFDF5),
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 entity?.city ?? 'Bengaluru',
                                 style: GoogleFonts.inter(
-                                  fontSize: 10,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF047857),
+                                  color: const Color(0xFF6366F1),
                                 ),
                               ),
                             ),
@@ -483,137 +450,28 @@ class ProfileView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 18),
-
-                      // Currency Preference
-                      Text(
-                        'Currency & Localization',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      BlocBuilder<PreferencesBloc, PreferencesState>(
-                        builder: (context, state) {
-                          return GlassCard(
-                            margin: EdgeInsets.zero,
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.currency_exchange,
-                                        size: 18,
-                                        color: AppColors.brandPurple),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Display Currency',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    _CurrencyPill(
-                                      label: '🇮🇳 INR',
-                                      isSelected: state.currency == 'INR',
-                                      onTap: () => context
-                                          .read<PreferencesBloc>()
-                                          .add(const SetCurrencyEvent('INR')),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _CurrencyPill(
-                                      label: '🇺🇸 USD',
-                                      isSelected: state.currency == 'USD',
-                                      onTap: () => context
-                                          .read<PreferencesBloc>()
-                                          .add(const SetCurrencyEvent('USD')),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Security & System Info
-                      Text(
-                        'Security & System',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      GlassCard(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          children: [
-                            _SettingTile(
-                              icon: Icons.shield_outlined,
-                              title: 'Backend Mesh Gateway',
-                              subtitle: 'Live Base: ${AppConstants.apiBaseUrl}',
-                              trailing: const Icon(Icons.check_circle,
-                                  size: 16, color: AppColors.statusSuccess),
-                            ),
-                            const Divider(color: AppColors.borderLight),
-                            _SettingTile(
-                              icon: Icons.fingerprint,
-                              title: 'Biometric Login',
-                              subtitle: 'Face ID / Touch ID Auth',
-                              trailing: Switch(
-                                value: true,
-                                activeThumbColor: AppColors.brandPurple,
-                                onChanged: (_) {},
-                              ),
-                            ),
-                            const Divider(color: AppColors.borderLight),
-                            const _SettingTile(
-                              icon: Icons.info_outline,
-                              title: 'Placfy Mobile Version',
-                              subtitle: 'v2.5.0 (Clean Light Edition)',
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Logout Button
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 50,
                         child: OutlinedButton.icon(
                           onPressed: () => _showLogoutDialog(context),
                           icon: const Icon(Icons.logout_rounded,
-                              size: 18, color: AppColors.statusError),
+                              size: 18, color: Color(0xFFEF4444)),
                           label: Text(
                             'Sign Out',
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.statusError,
+                              color: const Color(0xFFEF4444),
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
-                                color: Color(0xFFFECACA), width: 1.2),
-                            backgroundColor: const Color(0xFFFEF2F2),
+                                color: Color(0xFFEF4444), width: 1.2),
+                            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -629,94 +487,6 @@ class ProfileView extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _CurrencyPill extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _CurrencyPill({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPurple : AppColors.surfaceSubtle,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppColors.brandPurple : AppColors.borderLight,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Widget? trailing;
-
-  const _SettingTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.textSecondary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ...?trailing != null ? [trailing!] : null,
-        ],
       ),
     );
   }

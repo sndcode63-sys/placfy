@@ -94,7 +94,7 @@ class TalentBloc extends Bloc<TalentEvent, TalentState> {
   })  : _workforceRepository = workforceRepository ?? WorkforceRepository(),
         _storage = storage ?? SecureStorageService(),
         super(const TalentState(
-          candidates: AppConstants.initialCandidates,
+          candidates: [],
           members: [],
           selectedStage: null,
         )) {
@@ -157,7 +157,7 @@ class TalentBloc extends Bloc<TalentEvent, TalentState> {
   ) async {
     final slug = event.workspaceSlug ??
         await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+        'testing-workspace';
     final entityId = event.entityId ?? await _storage.getActiveEntityId();
 
     emit(state.copyWith(isLoadingMembers: true));

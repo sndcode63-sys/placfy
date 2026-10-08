@@ -158,45 +158,65 @@ class _AttendanceLeavesViewState extends State<AttendanceLeavesView> with Single
             ),
             const SizedBox(height: 8),
 
-            ...state.attendanceLogs.map((log) {
-              return GlassCard(
-                margin: const EdgeInsets.symmetric(vertical: 5),
-                padding: const EdgeInsets.all(14),
-                child: Row(
+            if (state.attendanceLogs.isEmpty)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: log.status == 'Present'
-                            ? AppColors.statusSuccessBg
-                            : AppColors.statusInfoBg,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        log.status == 'Present' ? Icons.fingerprint : Icons.wifi_tethering,
-                        color: log.status == 'Present' ? AppColors.statusSuccess : AppColors.statusInfo,
-                        size: 20,
-                      ),
+                    Icon(Icons.access_time, size: 48, color: AppColors.textMuted),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No attendance records yet',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            log.date,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Start tracking from Dashboard',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...state.attendanceLogs.map((log) {
+                return GlassCard(
+                  margin: const EdgeInsets.symmetric(vertical: 5),
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: log.status == 'Present'
+                              ? AppColors.statusSuccessBg
+                              : AppColors.statusInfoBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          log.status == 'Present' ? Icons.fingerprint : Icons.wifi_tethering,
+                          color: log.status == 'Present' ? AppColors.statusSuccess : AppColors.statusInfo,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              log.date,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Punch In: ${log.punchInTime} • Punch Out: ${log.punchOutTime ?? 'Active'}',
-                            style: const TextStyle(
-                              fontSize: 11,
+                            const SizedBox(height: 2),
+                            Text(
+                              'Punch In: ${log.punchInTime} • Punch Out: ${log.punchOutTime ?? 'Active'}',
+                              style: const TextStyle(
+                                fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
                           ),

@@ -27,13 +27,13 @@ class DownloadPayslipEvent extends PayrollEvent {
 // STATES
 class PayrollState extends Equatable {
   final List<PayslipModel> payslips;
-  final PayslipModel selectedPayslip;
+  final PayslipModel? selectedPayslip;
   final bool isDownloading;
   final String? notification;
 
   const PayrollState({
     required this.payslips,
-    required this.selectedPayslip,
+    this.selectedPayslip,
     this.isDownloading = false,
     this.notification,
   });
@@ -64,24 +64,26 @@ class PayrollState extends Equatable {
 // BLOC
 class PayrollBloc extends Bloc<PayrollEvent, PayrollState> {
   PayrollBloc()
-      : super(PayrollState(
-          payslips: AppConstants.initialPayslips,
-          selectedPayslip: AppConstants.initialPayslips.first,
+      : super(const PayrollState(
+          payslips: [],
+          selectedPayslip: null,
         )) {
     on<SelectPayslipEvent>((event, emit) {
+      if (state.payslips.isEmpty) return;
       final found = state.payslips.firstWhere(
         (p) => p.id == event.payslipId,
-        orElse: () => state.selectedPayslip,
+        orElse: () => state.payslips.first,
       );
       emit(state.copyWith(selectedPayslip: found));
     });
 
     on<DownloadPayslipEvent>((event, emit) async {
+      if (state.selectedPayslip == null) return;
       emit(state.copyWith(isDownloading: true));
       await Future.delayed(const Duration(milliseconds: 700));
       emit(state.copyWith(
         isDownloading: false,
-        notification: 'Digitally signed PDF for ${state.selectedPayslip.monthYear} downloaded.',
+        notification: 'Digitally signed PDF for ${state.selectedPayslip?.monthYear} downloaded.',
       ));
     });
   }

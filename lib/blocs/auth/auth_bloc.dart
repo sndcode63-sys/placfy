@@ -158,41 +158,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else if (workspaces.length > 1) {
         emit(WorkspaceSelectionRequired(user: user, workspaces: workspaces));
       } else {
-        // Fallback single workspace
-        const fallbackWs = WorkspaceModel(
-          id: 5,
-          tenantId: 'bb6d8f1f-8dd2-4d9a-9759-89a05010d7a9',
-          name: 'Testing Workspace',
-          slug: 'testing-workspace',
-        );
-        await authRepository.storage.saveActiveWorkspace(fallbackWs.slug);
-
-        final entities = await authRepository.getMyEntities(fallbackWs.slug);
-        LegalEntityModel? defaultEntity;
-        if (entities.isNotEmpty) {
-          defaultEntity = entities.firstWhere(
-            (e) => e.isDefault,
-            orElse: () => entities.first,
-          );
-          await authRepository.storage.saveActiveEntity(
-            entityId: defaultEntity.id,
-            entityName: defaultEntity.name,
-          );
-        }
-
-        final shift = await authRepository.getTodayAttendance(
-          fallbackWs.slug,
-          entityId: defaultEntity?.id,
-        );
-
-        emit(Authenticated(
-          user: user,
-          activeWorkspace: fallbackWs,
-          activeEntity: defaultEntity,
-          shiftInfo: shift,
-          availableWorkspaces: [fallbackWs],
-          availableEntities: entities,
-        ));
+        // No workspaces available - show error
+        emit(const AuthFailure('No active workspace found. Please contact your administrator.'));
       }
     } catch (e) {
       final cleanError = e.toString().replaceFirst('Exception: ', '');

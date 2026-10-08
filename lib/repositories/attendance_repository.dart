@@ -105,20 +105,30 @@ class AttendanceRepository {
   Future<Map<String, dynamic>> checkIn(
     String workspaceSlug, {
     int? entityId,
+    required String mode,
     double? latitude,
     double? longitude,
-    String? address,
+    String? selfie,
+    String? remoteReason,
+    String? source,
+    String? deviceInfo,
     String? note,
   }) async {
     try {
+      final formData = FormData.fromMap({
+        'mode': mode,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (selfie != null) 'selfie': selfie,
+        if (remoteReason != null) 'remote_reason': remoteReason,
+        if (source != null) 'source': source,
+        if (deviceInfo != null) 'device_info': deviceInfo,
+        if (note != null) 'note': note,
+      });
+
       final response = await _apiClient.post(
         AppConstants.attendanceCheckIn(workspaceSlug),
-        data: {
-          'latitude': ?latitude,
-          'longitude': ?longitude,
-          'address': ?address,
-          'note': ?note,
-        },
+        data: formData,
         options: _buildOptions(entityId),
       );
       if (response.data is Map<String, dynamic>) {
@@ -135,20 +145,26 @@ class AttendanceRepository {
   Future<Map<String, dynamic>> checkOut(
     String workspaceSlug, {
     int? entityId,
+    required String mode,
     double? latitude,
     double? longitude,
-    String? address,
+    String? selfie,
+    String? source,
     String? note,
   }) async {
     try {
+      final formData = FormData.fromMap({
+        'mode': mode,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (selfie != null) 'selfie': selfie,
+        if (source != null) 'source': source,
+        if (note != null) 'note': note,
+      });
+
       final response = await _apiClient.post(
         AppConstants.attendanceCheckOut(workspaceSlug),
-        data: {
-          'latitude': ?latitude,
-          'longitude': ?longitude,
-          'address': ?address,
-          'note': ?note,
-        },
+        data: formData,
         options: _buildOptions(entityId),
       );
       if (response.data is Map<String, dynamic>) {
@@ -171,7 +187,7 @@ class AttendanceRepository {
       final response = await _apiClient.post(
         AppConstants.attendancePauseTimer(workspaceSlug),
         data: {
-          'reason': ?reason,
+          if (reason != null) 'reason': reason,
         },
         options: _buildOptions(entityId),
       );
@@ -189,11 +205,14 @@ class AttendanceRepository {
   Future<Map<String, dynamic>> resumeTimer(
     String workspaceSlug, {
     int? entityId,
+    String? note,
   }) async {
     try {
       final response = await _apiClient.post(
         AppConstants.attendanceResumeTimer(workspaceSlug),
-        data: {},
+        data: {
+          if (note != null) 'note': note,
+        },
         options: _buildOptions(entityId),
       );
       if (response.data is Map<String, dynamic>) {
@@ -202,6 +221,53 @@ class AttendanceRepository {
       return {};
     } catch (e) {
       developer.log('Failed to resume timer: $e', name: 'AttendanceRepository');
+      rethrow;
+    }
+  }
+
+  /// Start a break
+  Future<Map<String, dynamic>> breakStart(
+    String workspaceSlug, {
+    int? entityId,
+    required int breakRuleId,
+    String? note,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        AppConstants.attendanceBreakStart(workspaceSlug),
+        data: {
+          'break_rule_id': breakRuleId,
+          if (note != null) 'note': note,
+        },
+        options: _buildOptions(entityId),
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {};
+    } catch (e) {
+      developer.log('Failed to start break: $e', name: 'AttendanceRepository');
+      rethrow;
+    }
+  }
+
+  /// End a break
+  Future<Map<String, dynamic>> breakEnd(
+    String workspaceSlug, {
+    int? entityId,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        AppConstants.attendanceBreakEnd(workspaceSlug),
+        data: {},
+        options: _buildOptions(entityId),
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {};
+    } catch (e) {
+      developer.log('Failed to end break: $e', name: 'AttendanceRepository');
       rethrow;
     }
   }

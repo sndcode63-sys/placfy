@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: Colors.white,
         body: Center(
           child: AnimatedBuilder(
             animation: _animController,
@@ -101,69 +101,74 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo Container
+                // Logo Container with gradient
                 Container(
-                  width: 108,
-                  height: 108,
-                  padding: const EdgeInsets.all(16),
+                  width: 120,
+                  height: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceWhite,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.borderLight, width: 1.5),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.brandPurple.withValues(alpha: 0.12),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: Image.asset(
-                    'assets/images/placfy_logo.png',
-                    fit: BoxFit.contain,
+                  child: Center(
+                    child: Text(
+                      'P',
+                      style: GoogleFonts.inter(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 // Brand Text
                 Text(
                   'Placfy',
                   style: GoogleFonts.inter(
-                    fontSize: 28,
+                    fontSize: 36,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: AppColors.textPrimary,
+                    letterSpacing: -1,
+                    color: const Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 12),
                 Text(
-                  'Autonomous HR & Payroll Cloud',
+                  'Work. Connect. Grow.',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64748B),
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 64),
+                // Loading indicator
+                const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Loading...',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                // Sleek loading progress
-                SizedBox(
-                  width: 140,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: const LinearProgressIndicator(
-                      minHeight: 3,
-                      backgroundColor: AppColors.surfaceSubtle,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.brandPurple),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Connecting to Live Mesh...',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textMuted,
+                    color: const Color(0xFF64748B),
                   ),
                 ),
               ],

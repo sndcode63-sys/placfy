@@ -30,7 +30,7 @@ class GlassCard extends StatelessWidget {
             ? AppColors.brandPurple.withValues(alpha: 0.4)
             : AppColors.borderLight);
 
-    final effectiveBg = backgroundColor ?? AppColors.surfaceCard;
+    final effectiveBg = backgroundColor ?? AppColors.surfaceCard.withValues(alpha: 0.95);
 
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(vertical: 6),
@@ -41,21 +41,24 @@ class GlassCard extends StatelessWidget {
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: AppColors.brandPurple.withValues(alpha: 0.08),
-                  blurRadius: 14,
+                  color: AppColors.brandPurple.withValues(alpha: 0.15),
+                  blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
               ]
             : AppColors.cardShadow,
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadius),
-          onTap: onTap,
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(16.0),
-            child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(borderRadius),
+            onTap: onTap,
+            child: Padding(
+              padding: padding ?? const EdgeInsets.all(16.0),
+              child: child,
+            ),
           ),
         ),
       ),

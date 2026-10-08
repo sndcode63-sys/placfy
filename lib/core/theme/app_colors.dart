@@ -1,55 +1,67 @@
 import 'package:flutter/material.dart';
 
-/// Clean, Minimalist Light Mode Color Palette for Placfy
+/// Modern, Vibrant Color Palette for Placfy
 class AppColors {
-  // Brand Primary (Matches official Placfy logo)
-  static const Color brandPurple = Color(0xFF5452EC);
-  static const Color brandPurpleLight = Color(0xFFEEF2FF);
-  static const Color brandPurpleDark = Color(0xFF4338CA);
+  // Brand Primary (Modern Gradient Purple)
+  static const Color brandPurple = Color(0xFF6366F1);
+  static const Color brandPurpleLight = Color(0xFFF5F3FF);
+  static const Color brandPurpleDark = Color(0xFF4F46E5);
+  static const Color brandGradientStart = Color(0xFF6366F1);
+  static const Color brandGradientEnd = Color(0xFF8B5CF6);
 
-  // Backgrounds (Clean SaaS Light Mode)
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate 50
-  static const Color surfaceWhite = Color(0xFFFFFFFF);    // Pure White
-  static const Color surfaceCard = Color(0xFFFFFFFF);     // Pure White
-  static const Color surfaceSubtle = Color(0xFFF1F5F9);   // Slate 100
-  static const Color surfaceHover = Color(0xFFE2E8F0);    // Slate 200
+  // Backgrounds (Modern Light Mode)
+  static const Color backgroundLight = Color(0xFFFAFAFA);
+  static const Color surfaceWhite = Color(0xFFFFFFFF);
+  static const Color surfaceCard = Color(0xFFFFFFFF);
+  static const Color surfaceSubtle = Color(0xFFF3F4F6);
+  static const Color surfaceHover = Color(0xFFE5E7EB);
 
   // Borders & Dividers
-  static const Color borderLight = Color(0xFFE2E8F0);     // Slate 200
-  static const Color borderSubtle = Color(0xFFCBD5E1);    // Slate 300
+  static const Color borderLight = Color(0xFFE5E7EB);
+  static const Color borderSubtle = Color(0xFFD1D5DB);
 
-  // Typography (Deep Charcoal / Slate for maximum readability)
-  static const Color textPrimary = Color(0xFF0F172A);     // Slate 900
-  static const Color textSecondary = Color(0xFF475569);   // Slate 600
-  static const Color textMuted = Color(0xFF94A3B8);       // Slate 400
+  // Typography (Modern Dark Gray)
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textMuted = Color(0xFF9CA3AF);
 
-  // Status & Accent Badges (Soft Pastel backgrounds with high-contrast text)
-  static const Color statusSuccess = Color(0xFF059669);
-  static const Color statusSuccessBg = Color(0xFFECFDF5);
-  static const Color statusSuccessBorder = Color(0xFFA7F3D0);
+  // Status & Accent Badges (Modern Vibrant Colors)
+  static const Color statusSuccess = Color(0xFF10B981);
+  static const Color statusSuccessBg = Color(0xFFD1FAE5);
+  static const Color statusSuccessBorder = Color(0xFF6EE7B7);
 
-  static const Color statusWarning = Color(0xFFD97706);
-  static const Color statusWarningBg = Color(0xFFFFFBEB);
-  static const Color statusWarningBorder = Color(0xFFFDE68A);
+  static const Color statusWarning = Color(0xFFF59E0B);
+  static const Color statusWarningBg = Color(0xFFFEF3C7);
+  static const Color statusWarningBorder = Color(0xFFFCD34D);
 
-  static const Color statusError = Color(0xFFDC2626);
-  static const Color statusErrorBg = Color(0xFFFEF2F2);
-  static const Color statusErrorBorder = Color(0xFFFECACA);
+  static const Color statusError = Color(0xFFEF4444);
+  static const Color statusErrorBg = Color(0xFFFEE2E2);
+  static const Color statusErrorBorder = Color(0xFFFCA5A5);
 
-  static const Color statusInfo = Color(0xFF2563EB);
-  static const Color statusInfoBg = Color(0xFFEFF6FF);
-  static const Color statusInfoBorder = Color(0xFFBFDBFE);
+  static const Color statusInfo = Color(0xFF3B82F6);
+  static const Color statusInfoBg = Color(0xFFDBEAFE);
+  static const Color statusInfoBorder = Color(0xFF93C5FD);
 
   // Additional Accents
-  static const Color accentTeal = Color(0xFF0D9488);
-  static const Color accentTealBg = Color(0xFFF0FDFA);
+  static const Color accentTeal = Color(0xFF14B8A6);
+  static const Color accentTealBg = Color(0xFFCCFBF1);
+  static const Color accentPink = Color(0xFFEC4899);
+  static const Color accentPinkBg = Color(0xFFFBCFE8);
 
-  // Subtle clean shadow
+  // Enhanced Shadows
   static const List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Color(0x0A0F172A),
-      blurRadius: 8,
-      offset: Offset(0, 2),
+      color: Color(0x1A000000),
+      blurRadius: 12,
+      offset: Offset(0, 4),
+    ),
+  ];
+
+  static const List<BoxShadow> floatingShadow = [
+    BoxShadow(
+      color: Color(0x15000000),
+      blurRadius: 20,
+      offset: Offset(0, 8),
     ),
   ];
 }

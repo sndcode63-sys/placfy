@@ -56,7 +56,7 @@ class PayrollView extends StatelessWidget {
                           separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (context, index) {
                             final p = payrollState.payslips[index];
-                            final isSelected = p.id == payslip.id;
+                            final isSelected = p.id == payslip?.id;
                             return GestureDetector(
                               onTap: () {
                                 context.read<PayrollBloc>().add(SelectPayslipEvent(p.id));
@@ -112,7 +112,7 @@ class PayrollView extends StatelessWidget {
                                   ),
                                 ),
                                 StatBadge(
-                                  label: payslip.status.toUpperCase(),
+                                  label: payslip!.status.toUpperCase(),
                                   color: AppColors.statusSuccess,
                                   icon: Icons.check_circle,
                                 ),
@@ -120,7 +120,7 @@ class PayrollView extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              prefState.formatAmount(payslip.netPay),
+                              prefState.formatAmount(payslip!.netPay),
                               style: const TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900,
@@ -130,7 +130,7 @@ class PayrollView extends StatelessWidget {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'Disbursed on ${payslip.paymentDate} • Ref: ${payslip.transactionId}',
+                              'Disbursed on ${payslip?.paymentDate} • Ref: ${payslip.transactionId}',
                               style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
                             ),
                             const Divider(height: 24, color: AppColors.borderLight),
@@ -139,7 +139,7 @@ class PayrollView extends StatelessWidget {
                               children: [
                                 _MiniStat(
                                   title: 'Gross Earnings',
-                                  value: prefState.formatAmount(payslip.grossEarnings),
+                                  value: prefState.formatAmount(payslip!.grossEarnings),
                                   color: AppColors.statusSuccess,
                                 ),
                                 _MiniStat(
@@ -198,7 +198,7 @@ class PayrollView extends StatelessWidget {
                               _BreakdownRow(
                                 title: 'Performance Bonus',
                                 subtitle: 'Q3 Merit Incentive',
-                                amount: prefState.formatAmount(payslip.performanceBonus),
+                                amount: prefState.formatAmount(payslip!.performanceBonus),
                                 highlightColor: AppColors.brandPurple,
                               ),
                             ],
@@ -241,7 +241,7 @@ class PayrollView extends StatelessWidget {
                             _BreakdownRow(
                               title: 'ESI & Professional Tax',
                               subtitle: 'Statutory city council deduction',
-                              amount: '-${prefState.formatAmount(payslip.esi + payslip.professionalTax)}',
+                              amount: '-${prefState.formatAmount(payslip!.esi + payslip.professionalTax)}',
                               isDeduction: true,
                             ),
                           ],

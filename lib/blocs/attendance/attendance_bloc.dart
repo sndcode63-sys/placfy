@@ -22,13 +22,60 @@ class LoadAttendanceEvent extends AttendanceEvent {
   List<Object?> get props => [workspaceSlug, entityId];
 }
 
-class StartPunchInEvent extends AttendanceEvent {}
+class StartPunchInEvent extends AttendanceEvent {
+  final String mode;
+  final double? latitude;
+  final double? longitude;
+  final String? remoteReason;
+  final String? note;
+
+  const StartPunchInEvent({
+    this.mode = 'standard',
+    this.latitude,
+    this.longitude,
+    this.remoteReason,
+    this.note,
+  });
+
+  @override
+  List<Object?> get props => [mode, latitude, longitude, remoteReason, note];
+}
 
 class PauseTimerEvent extends AttendanceEvent {}
 
 class ResumeTimerEvent extends AttendanceEvent {}
 
-class PunchOutEvent extends AttendanceEvent {}
+class PunchOutEvent extends AttendanceEvent {
+  final String mode;
+  final double? latitude;
+  final double? longitude;
+  final String? note;
+
+  const PunchOutEvent({
+    this.mode = 'standard',
+    this.latitude,
+    this.longitude,
+    this.note,
+  });
+
+  @override
+  List<Object?> get props => [mode, latitude, longitude, note];
+}
+
+class BreakStartEvent extends AttendanceEvent {
+  final int breakRuleId;
+  final String? note;
+
+  const BreakStartEvent({
+    required this.breakRuleId,
+    this.note,
+  });
+
+  @override
+  List<Object?> get props => [breakRuleId, note];
+}
+
+class BreakEndEvent extends AttendanceEvent {}
 
 class TickerTickEvent extends AttendanceEvent {
   final int currentSeconds;
@@ -145,19 +192,18 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     SecureStorageService? storage,
   })  : _attendanceRepository = attendanceRepository ?? AttendanceRepository(),
         _storage = storage ?? SecureStorageService(),
-        super(AttendanceState(
-          status: ShiftStatus.active,
-          elapsedSeconds: 20538, // 5h 42m 18s initial preview state
-          punchInTime: '09:12 AM',
-          attendanceLogs: AppConstants.initialAttendanceLogs,
-          lastAuditLog:
-              'TIMER_RESUME audit logged • Biometric face hash verified • Work session active',
+        super(const AttendanceState(
+          status: ShiftStatus.notStarted,
+          elapsedSeconds: 0,
+          attendanceLogs: [],
         )) {
     on<LoadAttendanceEvent>(_onLoadAttendance);
     on<StartPunchInEvent>(_onPunchIn);
     on<PauseTimerEvent>(_onPause);
     on<ResumeTimerEvent>(_onResume);
     on<PunchOutEvent>(_onPunchOut);
+    on<BreakStartEvent>(_onBreakStart);
+    on<BreakEndEvent>(_onBreakEnd);
     on<TickerTickEvent>(_onTick);
     on<ToggleGeoFenceEvent>(_onToggleGeoFence);
 
@@ -181,10 +227,17 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     LoadAttendanceEvent event,
     Emitter<AttendanceState> emit,
   ) async {
-    final slug = event.workspaceSlug ??
-        await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+    final slug = event.workspaceSlug ?? await _storage.getActiveWorkspace();
     final entityId = event.entityId ?? await _storage.getActiveEntityId();
+
+    // If no workspace slug, show error - fully dynamic, no fallback
+    if (slug == null) {
+      emit(state.copyWith(
+        isLoading: false,
+        lastAuditLog: 'No active workspace selected',
+      ));
+      return;
+    }
 
     emit(state.copyWith(
       isLoading: true,
@@ -283,10 +336,16 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     final nowTime = DateFormat('hh:mm a').format(DateTime.now());
-    final slug = state.activeWorkspaceSlug ??
-        await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
     final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    // If no workspace slug, cannot punch in - fully dynamic
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot check in: No active workspace',
+      ));
+      return;
+    }
 
     emit(state.copyWith(
       status: ShiftStatus.active,
@@ -294,14 +353,18 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       punchOutTime: null,
       elapsedSeconds: 0,
       lastAuditLog:
-          'TIMER_START audit logged • Face Hash ID #9024 verified • Sub-meter Geo-fence matched',
+          'TIMER_START audit logged • Mode: ${event.mode} • Geo-fence matched',
     ));
 
     try {
       await _attendanceRepository.checkIn(
         slug,
         entityId: entityId,
-        note: 'Mobile App Punch In',
+        mode: event.mode,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        remoteReason: event.remoteReason,
+        note: event.note ?? 'Mobile App Punch In',
       );
     } catch (_) {}
   }
@@ -311,10 +374,15 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     final nowTime = DateFormat('hh:mm a').format(DateTime.now());
-    final slug = state.activeWorkspaceSlug ??
-        await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
     final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot pause: No active workspace',
+      ));
+      return;
+    }
 
     emit(state.copyWith(
       status: ShiftStatus.paused,
@@ -336,10 +404,15 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     final nowTime = DateFormat('hh:mm a').format(DateTime.now());
-    final slug = state.activeWorkspaceSlug ??
-        await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
     final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot resume: No active workspace',
+      ));
+      return;
+    }
 
     emit(state.copyWith(
       status: ShiftStatus.active,
@@ -360,10 +433,15 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     final nowTime = DateFormat('hh:mm a').format(DateTime.now());
-    final slug = state.activeWorkspaceSlug ??
-        await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
     final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot check out: No active workspace',
+      ));
+      return;
+    }
 
     final newLog = AttendanceRecord(
       date: 'Today, ${DateFormat('MMM dd').format(DateTime.now())}',
@@ -379,14 +457,73 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       punchOutTime: nowTime,
       attendanceLogs: [newLog, ...state.attendanceLogs],
       lastAuditLog:
-          'TIMER_STOP audit logged • Shift ended • Total hours: ${state.formattedTimer}',
+          'TIMER_STOP audit logged • Mode: ${event.mode} • Total hours: ${state.formattedTimer}',
     ));
 
     try {
       await _attendanceRepository.checkOut(
         slug,
         entityId: entityId,
-        note: 'Mobile App Punch Out',
+        mode: event.mode,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        note: event.note ?? 'Mobile App Punch Out',
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _onBreakStart(
+    BreakStartEvent event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
+    final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot start break: No active workspace',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(
+      status: ShiftStatus.paused,
+      lastAuditLog: 'BREAK_START audit logged • Break rule ID: ${event.breakRuleId}',
+    ));
+
+    try {
+      await _attendanceRepository.breakStart(
+        slug,
+        entityId: entityId,
+        breakRuleId: event.breakRuleId,
+        note: event.note,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _onBreakEnd(
+    BreakEndEvent event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    final slug = state.activeWorkspaceSlug ?? await _storage.getActiveWorkspace();
+    final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
+
+    if (slug == null) {
+      emit(state.copyWith(
+        lastAuditLog: 'Cannot end break: No active workspace',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(
+      status: ShiftStatus.active,
+      lastAuditLog: 'BREAK_END audit logged • Work session resumed',
+    ));
+
+    try {
+      await _attendanceRepository.breakEnd(
+        slug,
+        entityId: entityId,
       );
     } catch (_) {}
   }

@@ -54,8 +54,8 @@ class LeaveRepository {
       developer.log('Failed to fetch leave balances from server: $e',
           name: 'LeaveRepository');
     }
-    // Graceful fallback to initial balances if policy is unassigned or server error
-    return AppConstants.initialLeaveBalances;
+    // Return empty list if server error
+    return [];
   }
 
   Future<List<LeaveRequestModel>> getLeaveRequests(
@@ -86,8 +86,8 @@ class LeaveRepository {
       developer.log('Failed to fetch leave requests from server: $e',
           name: 'LeaveRepository');
     }
-    // Graceful fallback to initial requests
-    return AppConstants.initialLeaveRequests;
+    // Return empty list if server error
+    return [];
   }
 
   Future<LeaveRequestModel> submitLeaveRequest(

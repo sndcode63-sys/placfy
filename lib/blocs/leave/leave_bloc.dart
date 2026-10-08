@@ -108,9 +108,9 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
     SecureStorageService? storage,
   })  : _leaveRepository = leaveRepository ?? LeaveRepository(),
         _storage = storage ?? SecureStorageService(),
-        super(LeaveState(
-          balances: AppConstants.initialLeaveBalances,
-          requests: AppConstants.initialLeaveRequests,
+        super(const LeaveState(
+          balances: [],
+          requests: [],
         )) {
     on<LoadLeavesEvent>(_onLoadLeaves);
     on<ApplyLeaveEvent>(_onApplyLeave);
@@ -123,7 +123,7 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
   ) async {
     final slug = event.workspaceSlug ??
         await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+        'testing-workspace';
     final entityId = event.entityId ?? await _storage.getActiveEntityId();
 
     emit(state.copyWith(
@@ -157,7 +157,7 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
 
     final slug = state.activeWorkspaceSlug ??
         await _storage.getActiveWorkspace() ??
-        AppConstants.testWorkspaceSlug;
+        'testing-workspace';
     final entityId = state.activeEntityId ?? await _storage.getActiveEntityId();
 
     final newRequest = await _leaveRepository.submitLeaveRequest(

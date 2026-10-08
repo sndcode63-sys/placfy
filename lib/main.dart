@@ -6,13 +6,10 @@ import 'blocs/auth/auth_state.dart';
 import 'blocs/navigation/navigation_bloc.dart';
 import 'blocs/attendance/attendance_bloc.dart';
 import 'blocs/leave/leave_bloc.dart';
-import 'blocs/payroll/payroll_bloc.dart';
-import 'blocs/talent/talent_bloc.dart';
 import 'blocs/preferences/preferences_bloc.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/attendance_repository.dart';
 import 'repositories/leave_repository.dart';
-import 'repositories/workforce_repository.dart';
 import 'views/splash/splash_screen.dart';
 
 void main() {
@@ -31,7 +28,6 @@ class _PlacfyAppState extends State<PlacfyApp> {
   late final AuthRepository _authRepository;
   late final AttendanceRepository _attendanceRepository;
   late final LeaveRepository _leaveRepository;
-  late final WorkforceRepository _workforceRepository;
 
   @override
   void initState() {
@@ -42,10 +38,6 @@ class _PlacfyAppState extends State<PlacfyApp> {
       storage: _authRepository.storage,
     );
     _leaveRepository = LeaveRepository(
-      apiClient: _authRepository.apiClient,
-      storage: _authRepository.storage,
-    );
-    _workforceRepository = WorkforceRepository(
       apiClient: _authRepository.apiClient,
       storage: _authRepository.storage,
     );
@@ -71,13 +63,6 @@ class _PlacfyAppState extends State<PlacfyApp> {
             storage: _authRepository.storage,
           ),
         ),
-        BlocProvider<PayrollBloc>(create: (_) => PayrollBloc()),
-        BlocProvider<TalentBloc>(
-          create: (_) => TalentBloc(
-            workforceRepository: _workforceRepository,
-            storage: _authRepository.storage,
-          ),
-        ),
         BlocProvider<PreferencesBloc>(create: (_) => PreferencesBloc()),
       ],
       child: BlocListener<AuthBloc, AuthState>(
@@ -90,10 +75,6 @@ class _PlacfyAppState extends State<PlacfyApp> {
                   entityId: entityId,
                 ));
             context.read<LeaveBloc>().add(LoadLeavesEvent(
-                  workspaceSlug: slug,
-                  entityId: entityId,
-                ));
-            context.read<TalentBloc>().add(LoadWorkspaceMembersEvent(
                   workspaceSlug: slug,
                   entityId: entityId,
                 ));
