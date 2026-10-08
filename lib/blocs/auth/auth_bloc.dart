@@ -20,9 +20,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onCheckAuthStatus(
-    CheckAuthStatus event,
-    Emitter<AuthState> emit,
-  ) async {
+      CheckAuthStatus event,
+      Emitter<AuthState> emit,
+      ) async {
     emit(const AuthLoading(message: 'Checking session...'));
     try {
       final token = await authRepository.storage.getAccessToken();
@@ -34,14 +34,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = await authRepository.getMe();
       final workspaces = await authRepository.getWorkspaces();
       final savedWorkspaceSlug =
-          await authRepository.storage.getActiveWorkspace();
+      await authRepository.storage.getActiveWorkspace();
 
       WorkspaceModel? activeWs;
       if (savedWorkspaceSlug != null && savedWorkspaceSlug.isNotEmpty) {
         activeWs = workspaces.cast<WorkspaceModel?>().firstWhere(
               (w) => w?.slug == savedWorkspaceSlug,
-              orElse: () => null,
-            );
+          orElse: () => null,
+        );
       }
 
       // If only one workspace or no specific saved, handle resolution
@@ -72,13 +72,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (savedEntityId != null) {
         activeEntity = entities.cast<LegalEntityModel?>().firstWhere(
               (e) => e?.id == savedEntityId,
-              orElse: () => null,
-            );
+          orElse: () => null,
+        );
       }
 
       if (activeEntity == null && entities.isNotEmpty) {
         activeEntity = entities.firstWhere(
-          (e) => e.isDefault,
+              (e) => e.isDefault,
           orElse: () => entities.first,
         );
       }
@@ -96,6 +96,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         entityId: activeEntity?.id,
       );
 
+      final onboarded = await authRepository.isOnboardedEmployee(
+        activeWs.slug,
+        entityId: activeEntity?.id,
+      );
+
       emit(Authenticated(
         user: user,
         activeWorkspace: activeWs,
@@ -103,6 +108,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         shiftInfo: shift,
         availableWorkspaces: workspaces,
         availableEntities: entities,
+        isOnboardedEmployee: onboarded,
       ));
     } catch (e) {
       developer.log('Auth check failed: $e', name: 'AuthBloc');
@@ -112,9 +118,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLoginSubmitted(
-    LoginSubmitted event,
-    Emitter<AuthState> emit,
-  ) async {
+      LoginSubmitted event,
+      Emitter<AuthState> emit,
+      ) async {
     emit(const AuthLoading(message: 'Signing in to Placfy...'));
     try {
       await authRepository.login(
@@ -133,7 +139,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         LegalEntityModel? defaultEntity;
         if (entities.isNotEmpty) {
           defaultEntity = entities.firstWhere(
-            (e) => e.isDefault,
+                (e) => e.isDefault,
             orElse: () => entities.first,
           );
           await authRepository.storage.saveActiveEntity(
@@ -147,6 +153,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           entityId: defaultEntity?.id,
         );
 
+        final onboarded = await authRepository.isOnboardedEmployee(
+          activeWs.slug,
+          entityId: defaultEntity?.id,
+        );
+
         emit(Authenticated(
           user: user,
           activeWorkspace: activeWs,
@@ -154,6 +165,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           shiftInfo: shift,
           availableWorkspaces: workspaces,
           availableEntities: entities,
+          isOnboardedEmployee: onboarded,
         ));
       } else if (workspaces.length > 1) {
         emit(WorkspaceSelectionRequired(user: user, workspaces: workspaces));
@@ -168,9 +180,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSelectWorkspace(
-    SelectWorkspace event,
-    Emitter<AuthState> emit,
-  ) async {
+      SelectWorkspace event,
+      Emitter<AuthState> emit,
+      ) async {
     emit(const AuthLoading(message: 'Switching workspace...'));
     try {
       final user = await authRepository.getMe();
@@ -182,7 +194,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       LegalEntityModel? defaultEntity;
       if (entities.isNotEmpty) {
         defaultEntity = entities.firstWhere(
-          (e) => e.isDefault,
+              (e) => e.isDefault,
           orElse: () => entities.first,
         );
         await authRepository.storage.saveActiveEntity(
@@ -196,6 +208,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         entityId: defaultEntity?.id,
       );
 
+      final onboarded = await authRepository.isOnboardedEmployee(
+        activeWs.slug,
+        entityId: defaultEntity?.id,
+      );
+
       emit(Authenticated(
         user: user,
         activeWorkspace: activeWs,
@@ -203,6 +220,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         shiftInfo: shift,
         availableWorkspaces: workspaces,
         availableEntities: entities,
+        isOnboardedEmployee: onboarded,
       ));
     } catch (e) {
       emit(AuthFailure('Failed to switch workspace: $e'));
@@ -210,9 +228,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSelectEntity(
-    SelectEntity event,
-    Emitter<AuthState> emit,
-  ) async {
+      SelectEntity event,
+      Emitter<AuthState> emit,
+      ) async {
     if (state is Authenticated) {
       final current = state as Authenticated;
       await authRepository.storage.saveActiveEntity(
@@ -225,24 +243,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         entityId: event.entity.id,
       );
 
+      final onboarded = await authRepository.isOnboardedEmployee(
+        current.activeWorkspace.slug,
+        entityId: event.entity.id,
+      );
+
       emit(current.copyWith(
         activeEntity: event.entity,
         shiftInfo: shift,
+        isOnboardedEmployee: onboarded,
       ));
     }
   }
 
   Future<void> _onRefreshProfileData(
-    RefreshProfileData event,
-    Emitter<AuthState> emit,
-  ) async {
+      RefreshProfileData event,
+      Emitter<AuthState> emit,
+      ) async {
     if (state is Authenticated) {
       final current = state as Authenticated;
       try {
         final user = await authRepository.getMe();
         final entities =
-            await authRepository.getMyEntities(current.activeWorkspace.slug);
+        await authRepository.getMyEntities(current.activeWorkspace.slug);
         final shift = await authRepository.getTodayAttendance(
+          current.activeWorkspace.slug,
+          entityId: current.activeEntity?.id,
+        );
+
+        final onboarded = await authRepository.isOnboardedEmployee(
           current.activeWorkspace.slug,
           entityId: current.activeEntity?.id,
         );
@@ -251,6 +280,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           user: user,
           availableEntities: entities,
           shiftInfo: shift,
+          isOnboardedEmployee: onboarded,
         ));
       } catch (e) {
         developer.log('Refresh profile failed: $e', name: 'AuthBloc');
@@ -259,9 +289,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLogoutRequested(
-    LogoutRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+      LogoutRequested event,
+      Emitter<AuthState> emit,
+      ) async {
     emit(const AuthLoading(message: 'Signing out...'));
     await authRepository.logout();
     emit(const Unauthenticated(message: 'You have been logged out.'));

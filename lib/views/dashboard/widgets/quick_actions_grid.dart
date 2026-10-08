@@ -81,7 +81,7 @@ class QuickActionsGrid extends StatelessWidget {
                     const SnackBar(
                       backgroundColor: AppColors.surfaceCard,
                       content: Text(
-                        'Daily Standup Checklist: Logged to Mesh.',
+                        'Daily standup checklist saved.',
                         style: TextStyle(color: AppColors.textPrimary),
                       ),
                       duration: Duration(seconds: 2),

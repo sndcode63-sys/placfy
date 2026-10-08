@@ -73,7 +73,7 @@ class ProfileView extends StatelessWidget {
         if (state is Unauthenticated) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
+                (route) => false,
           );
         }
       },
@@ -84,8 +84,9 @@ class ProfileView extends StatelessWidget {
           final workspace = isAuth ? state.activeWorkspace : null;
           final entity = isAuth ? state.activeEntity : null;
           final shift = isAuth ? state.shiftInfo : null;
+          final isOnboarded = !isAuth || state.isOnboardedEmployee;
           final List<WorkspaceModel> workspaces =
-              isAuth ? state.availableWorkspaces : const [];
+          isAuth ? state.availableWorkspaces : const [];
 
           final fullName = user?.fullName ?? 'Alex Taylor';
           final email = user?.email ?? 'employee@testing.com';
@@ -142,7 +143,7 @@ class ProfileView extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                     borderRadius:
-                                        BorderRadius.circular(6),
+                                    BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     userId,
@@ -184,7 +185,7 @@ class ProfileView extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         fullName,
@@ -209,7 +210,7 @@ class ProfileView extends StatelessWidget {
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                           borderRadius:
-                                              BorderRadius.circular(6),
+                                          BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           role,
@@ -295,7 +296,7 @@ class ProfileView extends StatelessWidget {
 
                       // Workspace & Entity Section
                       Text(
-                        'Workspace & Legal Entity',
+                        isOnboarded ? 'Workspace & Legal Entity' : 'Workspace',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -315,15 +316,15 @@ class ProfileView extends StatelessWidget {
                         child: InkWell(
                           onTap: workspaces.length > 1
                               ? () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => WorkspaceSelectScreen(
-                                        workspaces: workspaces,
-                                        user: user!,
-                                      ),
-                                    ),
-                                  );
-                                }
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => WorkspaceSelectScreen(
+                                  workspaces: workspaces,
+                                  user: user!,
+                                ),
+                              ),
+                            );
+                          }
                               : null,
                           child: Row(
                             children: [
@@ -340,7 +341,7 @@ class ProfileView extends StatelessWidget {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       workspace?.name ?? 'Testing Workspace',
@@ -352,7 +353,7 @@ class ProfileView extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'slug: ${workspace?.slug ?? "testing-workspace"}',
+                                      'Your workspace',
                                       style: GoogleFonts.inter(
                                         fontSize: 12,
                                         color: const Color(0xFF64748B),
@@ -383,72 +384,74 @@ class ProfileView extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      if (isOnboarded) ...[
+                        const SizedBox(height: 12),
 
-                      // Legal Entity Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
+                        // Legal Entity Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.account_balance_outlined,
+                                    color: Color(0xFF6366F1), size: 20),
                               ),
-                              child: const Icon(Icons.account_balance_outlined,
-                                  color: Color(0xFF6366F1), size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entity?.name ??
-                                        'Placfy Testing India Pvt Ltd',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF1E293B),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      entity?.name ??
+                                          'Placfy Testing India Pvt Ltd',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF1E293B),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Code: ${entity?.entityCode ?? "PLCFY-IND"} • ID: ${entity?.id ?? 5}',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: const Color(0xFF64748B),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      entity?.entityCode ?? '',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: const Color(0xFF64748B),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                entity?.city ?? 'Bengaluru',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF6366F1),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  entity?.city ?? 'Bengaluru',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF6366F1),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
 
                       const SizedBox(height: 20),
 

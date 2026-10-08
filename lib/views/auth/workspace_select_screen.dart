@@ -125,18 +125,10 @@ class WorkspaceSelectScreen extends StatelessWidget {
                               children: [
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Slug: ${workspace.slug}',
+                                  'Tap to open this workspace',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'ID: ${workspace.id}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: const Color(0xFF94A3B8),
                                   ),
                                 ),
                               ],
@@ -148,8 +140,8 @@ class WorkspaceSelectScreen extends StatelessWidget {
                             ),
                             onTap: () {
                               context.read<AuthBloc>().add(
-                                    SelectWorkspace(workspace),
-                                  );
+                                SelectWorkspace(workspace),
+                              );
                             },
                           ),
                         );

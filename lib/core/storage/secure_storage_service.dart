@@ -6,6 +6,7 @@ class SecureStorageService {
   static const String _keyActiveWorkspace = '@placfy_active_workspace';
   static const String _keyActiveEntityId = '@placfy_active_entity_id';
   static const String _keyActiveEntityName = '@placfy_active_entity_name';
+  static const String _keyAttendanceSession = '@placfy_attendance_session';
 
   final FlutterSecureStorage _storage;
 
@@ -58,7 +59,21 @@ class SecureStorageService {
     return await _storage.read(key: _keyActiveEntityName);
   }
 
+  // Running/paused work-session snapshot (survives app being closed)
+  Future<void> saveAttendanceSession(String json) async {
+    await _storage.write(key: _keyAttendanceSession, value: json);
+  }
+
+  Future<String?> getAttendanceSession() async {
+    return await _storage.read(key: _keyAttendanceSession);
+  }
+
+  Future<void> clearAttendanceSession() async {
+    await _storage.delete(key: _keyAttendanceSession);
+  }
+
   Future<void> clearAll() async {
+    await _storage.delete(key: _keyAttendanceSession);
     await _storage.delete(key: _keyAccessToken);
     await _storage.delete(key: _keyRefreshToken);
     await _storage.delete(key: _keyActiveWorkspace);

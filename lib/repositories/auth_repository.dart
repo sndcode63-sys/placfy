@@ -90,7 +90,7 @@ class AuthRepository {
         if (data.containsKey('results') && data['results'] is List) {
           return (data['results'] as List)
               .map((item) =>
-                  WorkspaceModel.fromJson(item as Map<String, dynamic>))
+              WorkspaceModel.fromJson(item as Map<String, dynamic>))
               .toList();
         } else if (data.containsKey('id') || data.containsKey('slug')) {
           return [WorkspaceModel.fromJson(data)];
@@ -106,19 +106,19 @@ class AuthRepository {
   Future<List<LegalEntityModel>> getMyEntities(String workspaceSlug) async {
     try {
       final response =
-          await _apiClient.get(AppConstants.myEntities(workspaceSlug));
+      await _apiClient.get(AppConstants.myEntities(workspaceSlug));
       final dynamic data = response.data;
 
       if (data is List) {
         return data
             .map((item) =>
-                LegalEntityModel.fromJson(item as Map<String, dynamic>))
+            LegalEntityModel.fromJson(item as Map<String, dynamic>))
             .toList();
       } else if (data is Map<String, dynamic>) {
         if (data.containsKey('results') && data['results'] is List) {
           return (data['results'] as List)
               .map((item) =>
-                  LegalEntityModel.fromJson(item as Map<String, dynamic>))
+              LegalEntityModel.fromJson(item as Map<String, dynamic>))
               .toList();
         } else if (data.containsKey('id') || data.containsKey('name')) {
           return [LegalEntityModel.fromJson(data)];
@@ -132,9 +132,9 @@ class AuthRepository {
   }
 
   Future<ShiftInfoModel> getTodayAttendance(
-    String workspaceSlug, {
-    int? entityId,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+      }) async {
     try {
       final Options options = Options();
       if (entityId != null) {
@@ -158,6 +158,31 @@ class AuthRepository {
       return ShiftInfoModel(
         date: DateTime.now().toIso8601String().substring(0, 10),
       );
+    }
+  }
+
+  /// Workspace members who are not onboarded employees get a 403
+  /// ("only available to onboarded employees") on employee endpoints.
+  Future<bool> isOnboardedEmployee(String workspaceSlug, {int? entityId}) async {
+    try {
+      final Options options = Options();
+      if (entityId != null) {
+        options.headers = {'X-Entity-Id': entityId.toString()};
+      }
+      await _apiClient.get(
+        AppConstants.leaveBalances(workspaceSlug),
+        options: options,
+      );
+      return true;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final d = e.response?.data;
+        final text = (d is Map ? (d['detail'] ?? '') : (d ?? '')).toString().toLowerCase();
+        if (text.contains('onboarded')) return false;
+      }
+      return true;
+    } catch (_) {
+      return true;
     }
   }
 

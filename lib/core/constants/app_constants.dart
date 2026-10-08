@@ -99,7 +99,7 @@ class AppConstants {
       'color': 0xFF00D294,
       'badge': 'Gross-to-Net Rails',
       'description':
-          'Instant journal entry synchronization, department expense allocation, statutory tax compliance (PF, ESI, TDS Sec 192), and direct banking rails.',
+      'Instant journal entry synchronization, department expense allocation, statutory tax compliance (PF, ESI, TDS Sec 192), and direct banking rails.',
       'metrics': ['99.98% Accuracy', 'Zero Discrepancy', '1-Click Disbursement'],
     },
     {
@@ -108,8 +108,8 @@ class AppConstants {
       'color': 0xFF00A5EF,
       'badge': '120m Geo-Fence',
       'description':
-          'Sub-meter 120m office geo-fencing, anti-spoof biometric selfie check-in, real-time work session pause/resume, and tamper-proof audit trails.',
-      'metrics': ['120m Precision', 'Face Hash ID', 'Auto Break Audit'],
+      'Sub-meter 120m office geo-fencing, anti-spoof biometric selfie check-in, real-time work session pause/resume, and tamper-proof audit trails.',
+      'metrics': ['120m Precision', 'Selfie Check-in', 'Auto Break Audit'],
     },
     {
       'title': 'AI Talent Screening & Video',
@@ -117,17 +117,17 @@ class AppConstants {
       'color': 0xFF8B5CF6,
       'badge': 'Proctored AI',
       'description':
-          'Asynchronous video interviews with gaze tracking, candidate enrichment, automatic rubric evaluation, and automated multi-stage hiring pipelines.',
+      'Asynchronous video interviews with gaze tracking, candidate enrichment, automatic rubric evaluation, and automated multi-stage hiring pipelines.',
       'metrics': ['98.7% Proctor Score', '3x Faster Hiring', 'Rubric Calibrated'],
     },
     {
       'title': 'Core HR Master Directory',
       'icon': 'people_alt',
       'color': 0xFF3B82F6,
-      'badge': 'Single DB Mesh',
+      'badge': 'One Platform',
       'description':
-          'Unified relational schema for org hierarchies, leave workflows, appointment letters, digital NDA signing, and employee lifecycle management.',
-      'metrics': ['Single Source of Truth', 'Zero API Lag', 'Role Governance'],
+      'One platform for org hierarchies, leave workflows, appointment letters, digital NDA signing, and employee lifecycle management.',
+      'metrics': ['Single Source of Truth', 'Always In Sync', 'Role Governance'],
     },
     {
       'title': 'Smart Expense Management',
@@ -135,7 +135,7 @@ class AppConstants {
       'color': 0xFFF59E0B,
       'badge': 'OCR Extraction',
       'description':
-          'AI-powered optical receipt reading, automated currency conversion, multi-tier manager approvals, and automatic payroll inclusion.',
+      'AI-powered optical receipt reading, automated currency conversion, multi-tier manager approvals, and automatic payroll inclusion.',
       'metrics': ['Instant OCR', 'Auto-Matched GL', 'Policy Safeguard'],
     },
   ];

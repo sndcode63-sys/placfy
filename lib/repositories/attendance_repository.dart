@@ -1,4 +1,5 @@
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../core/constants/app_constants.dart';
 import '../core/network/api_client.dart';
@@ -26,11 +27,26 @@ class AttendanceRepository {
     return options;
   }
 
+
+  void _logError(String what, Object e) {
+    if (e is DioException) {
+      debugPrint('🔥 [AttendanceRepository] $what -> HTTP ${e.response?.statusCode} | ${e.response?.data ?? e.message}');
+    } else {
+      debugPrint('🔥 [AttendanceRepository] $what -> $e');
+    }
+    developer.log('$what: $e', name: 'AttendanceRepository');
+  }
+
+  Map<String, dynamic> get _monthYear {
+    final now = DateTime.now();
+    return {'month': now.month, 'year': now.year};
+  }
+
   /// Fetch today's real attendance status from server
   Future<Map<String, dynamic>> getTodayAttendance(
-    String workspaceSlug, {
-    int? entityId,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+      }) async {
     try {
       final response = await _apiClient.get(
         AppConstants.attendanceToday(workspaceSlug),
@@ -41,20 +57,20 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to fetch today attendance: $e',
-          name: 'AttendanceRepository');
+      _logError('Failed to fetch today attendance', e);
       return {};
     }
   }
 
   /// Fetch attendance history logs from server
   Future<List<AttendanceRecord>> getAttendanceLogs(
-    String workspaceSlug, {
-    int? entityId,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+      }) async {
     try {
       final response = await _apiClient.get(
         AppConstants.attendanceLogs(workspaceSlug),
+        queryParameters: _monthYear,
         options: _buildOptions(entityId),
       );
 
@@ -62,32 +78,32 @@ class AttendanceRepository {
       if (data is List) {
         return data
             .map((item) =>
-                AttendanceRecord.fromJson(item as Map<String, dynamic>))
+            AttendanceRecord.fromJson(item as Map<String, dynamic>))
             .toList();
       } else if (data is Map<String, dynamic> &&
           data.containsKey('results') &&
           data['results'] is List) {
         return (data['results'] as List)
             .map((item) =>
-                AttendanceRecord.fromJson(item as Map<String, dynamic>))
+            AttendanceRecord.fromJson(item as Map<String, dynamic>))
             .toList();
       }
       return [];
     } catch (e) {
-      developer.log('Failed to fetch attendance logs: $e',
-          name: 'AttendanceRepository');
+      _logError('Failed to fetch attendance logs', e);
       return [];
     }
   }
 
   /// Fetch monthly attendance metrics summary from server
   Future<Map<String, dynamic>> getAttendanceSummary(
-    String workspaceSlug, {
-    int? entityId,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+      }) async {
     try {
       final response = await _apiClient.get(
         AppConstants.attendanceSummary(workspaceSlug),
+        queryParameters: _monthYear,
         options: _buildOptions(entityId),
       );
       if (response.data is Map<String, dynamic>) {
@@ -95,31 +111,30 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to fetch attendance summary: $e',
-          name: 'AttendanceRepository');
+      _logError('Failed to fetch attendance summary', e);
       return {};
     }
   }
 
   /// Punch in / Check in to work session
   Future<Map<String, dynamic>> checkIn(
-    String workspaceSlug, {
-    int? entityId,
-    required String mode,
-    double? latitude,
-    double? longitude,
-    String? selfie,
-    String? remoteReason,
-    String? source,
-    String? deviceInfo,
-    String? note,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+        required String mode,
+        double? latitude,
+        double? longitude,
+        String? selfie,
+        String? remoteReason,
+        String? source,
+        String? deviceInfo,
+        String? note,
+      }) async {
     try {
       final formData = FormData.fromMap({
         'mode': mode,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
-        if (selfie != null) 'selfie': selfie,
+        if (selfie != null) 'selfie': await MultipartFile.fromFile(selfie),
         if (remoteReason != null) 'remote_reason': remoteReason,
         if (source != null) 'source': source,
         if (deviceInfo != null) 'device_info': deviceInfo,
@@ -136,28 +151,28 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to punch in: $e', name: 'AttendanceRepository');
+      _logError('Failed to punch in', e);
       rethrow;
     }
   }
 
   /// Punch out / Check out from work session
   Future<Map<String, dynamic>> checkOut(
-    String workspaceSlug, {
-    int? entityId,
-    required String mode,
-    double? latitude,
-    double? longitude,
-    String? selfie,
-    String? source,
-    String? note,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+        required String mode,
+        double? latitude,
+        double? longitude,
+        String? selfie,
+        String? source,
+        String? note,
+      }) async {
     try {
       final formData = FormData.fromMap({
         'mode': mode,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
-        if (selfie != null) 'selfie': selfie,
+        if (selfie != null) 'selfie': await MultipartFile.fromFile(selfie),
         if (source != null) 'source': source,
         if (note != null) 'note': note,
       });
@@ -172,22 +187,22 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to punch out: $e', name: 'AttendanceRepository');
+      _logError('Failed to punch out', e);
       rethrow;
     }
   }
 
   /// Pause work session timer
   Future<Map<String, dynamic>> pauseTimer(
-    String workspaceSlug, {
-    int? entityId,
-    String? reason,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+        String? reason,
+      }) async {
     try {
       final response = await _apiClient.post(
         AppConstants.attendancePauseTimer(workspaceSlug),
         data: {
-          if (reason != null) 'reason': reason,
+          if (reason != null) 'note': reason,
         },
         options: _buildOptions(entityId),
       );
@@ -196,17 +211,17 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to pause timer: $e', name: 'AttendanceRepository');
+      _logError('Failed to pause timer', e);
       rethrow;
     }
   }
 
   /// Resume work session timer
   Future<Map<String, dynamic>> resumeTimer(
-    String workspaceSlug, {
-    int? entityId,
-    String? note,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+        String? note,
+      }) async {
     try {
       final response = await _apiClient.post(
         AppConstants.attendanceResumeTimer(workspaceSlug),
@@ -220,18 +235,18 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to resume timer: $e', name: 'AttendanceRepository');
+      _logError('Failed to resume timer', e);
       rethrow;
     }
   }
 
   /// Start a break
   Future<Map<String, dynamic>> breakStart(
-    String workspaceSlug, {
-    int? entityId,
-    required int breakRuleId,
-    String? note,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+        required int breakRuleId,
+        String? note,
+      }) async {
     try {
       final response = await _apiClient.post(
         AppConstants.attendanceBreakStart(workspaceSlug),
@@ -246,16 +261,16 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to start break: $e', name: 'AttendanceRepository');
+      _logError('Failed to start break', e);
       rethrow;
     }
   }
 
   /// End a break
   Future<Map<String, dynamic>> breakEnd(
-    String workspaceSlug, {
-    int? entityId,
-  }) async {
+      String workspaceSlug, {
+        int? entityId,
+      }) async {
     try {
       final response = await _apiClient.post(
         AppConstants.attendanceBreakEnd(workspaceSlug),
@@ -267,7 +282,7 @@ class AttendanceRepository {
       }
       return {};
     } catch (e) {
-      developer.log('Failed to end break: $e', name: 'AttendanceRepository');
+      _logError('Failed to end break', e);
       rethrow;
     }
   }

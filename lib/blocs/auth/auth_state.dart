@@ -51,6 +51,8 @@ class Authenticated extends AuthState {
   final ShiftInfoModel? shiftInfo;
   final List<WorkspaceModel> availableWorkspaces;
   final List<LegalEntityModel> availableEntities;
+  /// false for workspace members who are not onboarded employees yet.
+  final bool isOnboardedEmployee;
 
   const Authenticated({
     required this.user,
@@ -59,6 +61,7 @@ class Authenticated extends AuthState {
     this.shiftInfo,
     this.availableWorkspaces = const [],
     this.availableEntities = const [],
+    this.isOnboardedEmployee = true,
   });
 
   Authenticated copyWith({
@@ -68,6 +71,7 @@ class Authenticated extends AuthState {
     ShiftInfoModel? shiftInfo,
     List<WorkspaceModel>? availableWorkspaces,
     List<LegalEntityModel>? availableEntities,
+    bool? isOnboardedEmployee,
   }) {
     return Authenticated(
       user: user ?? this.user,
@@ -76,18 +80,20 @@ class Authenticated extends AuthState {
       shiftInfo: shiftInfo ?? this.shiftInfo,
       availableWorkspaces: availableWorkspaces ?? this.availableWorkspaces,
       availableEntities: availableEntities ?? this.availableEntities,
+      isOnboardedEmployee: isOnboardedEmployee ?? this.isOnboardedEmployee,
     );
   }
 
   @override
   List<Object?> get props => [
-        user,
-        activeWorkspace,
-        activeEntity,
-        shiftInfo,
-        availableWorkspaces,
-        availableEntities,
-      ];
+    user,
+    activeWorkspace,
+    activeEntity,
+    shiftInfo,
+    availableWorkspaces,
+    availableEntities,
+    isOnboardedEmployee,
+  ];
 }
 
 class AuthFailure extends AuthState {

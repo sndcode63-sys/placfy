@@ -60,7 +60,7 @@ class _PlacfyShowcaseViewState extends State<PlacfyShowcaseView> {
                       PulseIndicator(color: AppColors.statusSuccess, size: 6),
                       SizedBox(width: 6),
                       Text(
-                        'RELATIONAL MESH LIVE • ZERO BROKEN APIS',
+                        'ALL SYSTEMS RUNNING',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -102,7 +102,7 @@ class _PlacfyShowcaseViewState extends State<PlacfyShowcaseView> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Unified gross-to-net payroll, 120m sub-meter biometric attendance, and AI-proctored hiring in a single relational schema.',
+                      'Unified gross-to-net payroll, 120m sub-meter biometric attendance, and AI-proctored hiring on one platform.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,

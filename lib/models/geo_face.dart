@@ -1,32 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents a configured break type for the shift.
-class BreakRuleInfo extends Equatable {
-  final int id;
-  final String name;
-  final int? durationMinutes;
-  final bool isPaid;
-
-  const BreakRuleInfo({
-    required this.id,
-    required this.name,
-    this.durationMinutes,
-    this.isPaid = true,
-  });
-
-  factory BreakRuleInfo.fromJson(Map<String, dynamic> json) {
-    return BreakRuleInfo(
-      id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? 'Break',
-      durationMinutes: json['duration_minutes'] as int? ?? json['max_duration_minutes'] as int? ?? json['duration'] as int?,
-      isPaid: json['is_paid'] as bool? ?? true,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name, durationMinutes, isPaid];
-}
-
 /// Office location + allowed radius configured in the attendance policy.
 class GeoFenceInfo extends Equatable {
   final double latitude;
@@ -64,10 +37,6 @@ class ShiftInfoModel extends Equatable {
   final bool requireGeo;
   final bool allowRemoteCheckin;
   final GeoFenceInfo? geoFence;
-  final List<BreakRuleInfo> breakRules;
-  final bool isOnBreak;
-  final BreakRuleInfo? activeBreak;
-  final String? breakStartedAt;
 
   const ShiftInfoModel({
     required this.date,
@@ -90,10 +59,6 @@ class ShiftInfoModel extends Equatable {
     this.requireGeo = false,
     this.allowRemoteCheckin = true,
     this.geoFence,
-    this.breakRules = const [],
-    this.isOnBreak = false,
-    this.activeBreak,
-    this.breakStartedAt,
   });
 
   String get formattedHours {
@@ -104,10 +69,7 @@ class ShiftInfoModel extends Equatable {
 
   /// True if the policy allows checking in from the office (not only remote).
   bool get allowOfficeCheckin =>
-      enabledModes.isEmpty ||
-          enabledModes.any((m) => m != 'remote') ||
-          requireGeo ||
-          requireSelfie;
+      enabledModes.isEmpty || enabledModes.any((m) => m != 'remote') || requireGeo || requireSelfie;
 
   String get statusDisplay {
     switch (status.toLowerCase()) {
@@ -127,11 +89,6 @@ class ShiftInfoModel extends Equatable {
     }
   }
 
-  // ---------- Convenient Break Getters requested by UI ----------
-  bool get hasBreakStateKey => isOnBreak || activeBreak != null || breakStartedAt != null;
-
-  String? get activeBreakName => activeBreak?.name;
-
   // ---------- tolerant JSON helpers (backend key names may vary) ----------
   static dynamic _first(List<Map<String, dynamic>?> maps, List<String> keys) {
     for (final m in maps) {
@@ -150,13 +107,8 @@ class ShiftInfoModel extends Equatable {
       v == null ? null : double.tryParse(v.toString());
 
   static GeoFenceInfo? _parseGeoFence(List<Map<String, dynamic>?> sources) {
-    final nested = _asMap(_first(sources, [
-      'geo_fence',
-      'geofence',
-      'geo_fence_config',
-      'office_location',
-      'office',
-    ]));
+    final nested = _asMap(_first(sources,
+        ['geo_fence', 'geofence', 'geo_fence_config', 'office_location', 'office']));
     final all = <Map<String, dynamic>?>[nested, ...sources];
     final lat = _num(_first(all, ['latitude', 'lat', 'office_latitude', 'geo_latitude']));
     final lng = _num(_first(all, ['longitude', 'lng', 'lon', 'office_longitude', 'geo_longitude']));
@@ -173,26 +125,6 @@ class ShiftInfoModel extends Equatable {
     return GeoFenceInfo(latitude: lat, longitude: lng, radiusMeters: radius);
   }
 
-  static List<BreakRuleInfo> _parseBreakRules(List<Map<String, dynamic>?> sources) {
-    final rawBreaks = _first(sources, ['break_rules', 'breaks', 'allowed_breaks']);
-    if (rawBreaks is List) {
-      return rawBreaks
-          .map((e) => _asMap(e))
-          .where((e) => e != null)
-          .map((e) => BreakRuleInfo.fromJson(e!))
-          .toList();
-    }
-    return [];
-  }
-
-  static BreakRuleInfo? _parseActiveBreak(List<Map<String, dynamic>?> sources) {
-    final activeMap = _asMap(_first(sources, ['active_break', 'current_break', 'break_info']));
-    if (activeMap != null) {
-      return BreakRuleInfo.fromJson(activeMap);
-    }
-    return null;
-  }
-
   factory ShiftInfoModel.fromJson(Map<String, dynamic> json) {
     final policy = _asMap(json['policy']) ?? _asMap(json['attendance_policy']);
     final sources = <Map<String, dynamic>?>[json, policy];
@@ -202,9 +134,10 @@ class ShiftInfoModel extends Equatable {
         ? rawModes.map((e) => e.toString()).toList()
         : <String>['standard'];
 
-    final policyName = (_first(sources, ['policy_name', 'name']) ?? '').toString();
+    final policyName =
+    (_first(sources, ['policy_name', 'name']) ?? '').toString();
 
-    // Policy present? Explicit flag wins; otherwise infer from payload.
+    // Policy present?  Explicit flag wins; otherwise infer from payload.
     bool hasPolicy;
     final flag = json['has_policy'];
     if (flag is bool) {
@@ -213,7 +146,9 @@ class ShiftInfoModel extends Equatable {
         json.containsKey('policy_name') ||
         json.containsKey('policy_id') ||
         json.containsKey('policy')) {
-      hasPolicy = policy != null || policyName.isNotEmpty || json['policy_id'] != null;
+      hasPolicy = policy != null ||
+          policyName.isNotEmpty ||
+          json['policy_id'] != null;
     } else {
       hasPolicy = true; // payload says nothing about policy -> don't block
     }
@@ -224,10 +159,6 @@ class ShiftInfoModel extends Equatable {
     final requireGeo = geoFlag == true || modes.contains('geo_fenced');
 
     final remoteFlag = _first(sources, ['allow_remote_checkin', 'allow_remote']);
-
-    final onBreakFlag = _first(sources, ['is_on_break', 'on_break', 'has_active_break']);
-    final activeBreakObj = _parseActiveBreak(sources);
-    final breakStartedAtStr = _first(sources, ['break_started_at', 'break_start_time', 'started_at'])?.toString();
 
     return ShiftInfoModel(
       date: json['date'] as String? ?? DateTime.now().toIso8601String().substring(0, 10),
@@ -248,14 +179,8 @@ class ShiftInfoModel extends Equatable {
       enabledModes: modes,
       requireSelfie: requireSelfie,
       requireGeo: requireGeo,
-      allowRemoteCheckin: remoteFlag is bool
-          ? remoteFlag
-          : modes.contains('remote') || modes.length <= 1,
+      allowRemoteCheckin: remoteFlag is bool ? remoteFlag : modes.contains('remote') || modes.length <= 1,
       geoFence: _parseGeoFence(sources),
-      breakRules: _parseBreakRules(sources),
-      isOnBreak: onBreakFlag == true || activeBreakObj != null || breakStartedAtStr != null,
-      activeBreak: activeBreakObj,
-      breakStartedAt: breakStartedAtStr,
     );
   }
 
@@ -281,9 +206,5 @@ class ShiftInfoModel extends Equatable {
     requireGeo,
     allowRemoteCheckin,
     geoFence,
-    breakRules,
-    isOnBreak,
-    activeBreak,
-    breakStartedAt,
   ];
 }

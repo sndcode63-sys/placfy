@@ -1,4 +1,5 @@
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../constants/app_constants.dart';
 import '../storage/secure_storage_service.dart';
@@ -31,6 +32,58 @@ class ApiClient {
 
   Dio get dio => _dio;
   SecureStorageService get storage => _storageService;
+
+
+  // ================= TERMINAL LOGGING =================
+  static String _short(Object? v, [int max = 1500]) {
+    final t = v.toString();
+    return t.length > max ? '${t.substring(0, max)}... [truncated ${t.length - max} chars]' : t;
+  }
+
+  static Object? _mask(Object? body) {
+    if (body is Map) {
+      final m = Map<dynamic, dynamic>.from(body);
+      for (final k in ['password', 'refresh', 'access']) {
+        if (m.containsKey(k)) m[k] = '***';
+      }
+      return m;
+    }
+    return body;
+  }
+
+  InterceptorsWrapper _buildLogInterceptor() {
+    return InterceptorsWrapper(
+      onRequest: (o, handler) {
+        final auth = o.headers['Authorization']?.toString() ?? 'NONE';
+        final maskedAuth = auth.length > 25 ? '${auth.substring(0, 25)}...' : auth;
+        debugPrint('\n➡️  [API REQUEST] ${o.method} ${o.uri}');
+        debugPrint('    Authorization : $maskedAuth');
+        debugPrint('    X-Entity-Id   : ${o.headers['X-Entity-Id']}');
+        if (o.queryParameters.isNotEmpty) {
+          debugPrint('    Query         : ${o.queryParameters}');
+        }
+        if (o.data is FormData) {
+          final fd = o.data as FormData;
+          debugPrint('    Body (form)   : ${fd.fields}  files=${fd.files.map((f) => f.key).toList()}');
+        } else if (o.data != null) {
+          debugPrint('    Body          : ${_short(_mask(o.data))}');
+        }
+        handler.next(o);
+      },
+      onResponse: (r, handler) {
+        debugPrint('✅ [API RESPONSE] ${r.statusCode} ${r.requestOptions.method} ${r.requestOptions.uri}');
+        debugPrint('    Data          : ${_short(r.data)}');
+        handler.next(r);
+      },
+      onError: (e, handler) {
+        debugPrint('❌ [API ERROR] ${e.response?.statusCode} ${e.requestOptions.method} ${e.requestOptions.uri}');
+        debugPrint('    Type          : ${e.type}');
+        debugPrint('    Message       : ${e.message}');
+        debugPrint('    Server body   : ${_short(e.response?.data)}');
+        handler.next(e);
+      },
+    );
+  }
 
   void _setupInterceptors() {
     _dio.interceptors.add(
@@ -75,7 +128,7 @@ class ApiClient {
                       baseUrl: _dio.options.baseUrl,
                       headers: {
                         AppConstants.ngrokSkipHeader:
-                            AppConstants.ngrokSkipHeaderValue,
+                        AppConstants.ngrokSkipHeaderValue,
                         'Content-Type': 'application/json',
                       },
                     ),
@@ -122,13 +175,14 @@ class ApiClient {
         },
       ),
     );
+    _dio.interceptors.add(_buildLogInterceptor());
   }
 
   Future<Response<T>> get<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-  }) async {
+      String path, {
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+      }) async {
     return await _dio.get<T>(
       path,
       queryParameters: queryParameters,
@@ -137,11 +191,11 @@ class ApiClient {
   }
 
   Future<Response<T>> post<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-  }) async {
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+      }) async {
     return await _dio.post<T>(
       path,
       data: data,
@@ -151,11 +205,11 @@ class ApiClient {
   }
 
   Future<Response<T>> put<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-  }) async {
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+      }) async {
     return await _dio.put<T>(
       path,
       data: data,
@@ -165,11 +219,11 @@ class ApiClient {
   }
 
   Future<Response<T>> delete<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-  }) async {
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+      }) async {
     return await _dio.delete<T>(
       path,
       data: data,
