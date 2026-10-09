@@ -41,6 +41,7 @@ class EmployeeDashboardView extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(
           20,
           10,
+
           20,
           FloatingNavBar.reserve(context),
         ),
