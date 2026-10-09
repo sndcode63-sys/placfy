@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Responsive wrapper that adapts cleanly to mobile, tablets, and desktop.
+/// Centers content and caps its width so layouts stay tidy on tablets.
 class ResponsiveLayout extends StatelessWidget {
   final Widget child;
   final double maxWidth;
@@ -9,26 +9,31 @@ class ResponsiveLayout extends StatelessWidget {
   const ResponsiveLayout({
     super.key,
     required this.child,
-    this.maxWidth = 680.0,
+    this.maxWidth = 600.0,
     this.padding,
   });
 
-  static bool isMobile(BuildContext context) => MediaQuery.of(context).size.width < 600;
-  static bool isTablet(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 600 && MediaQuery.of(context).size.width < 1024;
-  static bool isDesktop(BuildContext context) => MediaQuery.of(context).size.width >= 1024;
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < 600;
+  static bool isTablet(BuildContext context) {
+    final w = MediaQuery.sizeOf(context).width;
+    return w >= 600 && w < 1024;
+  }
+
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= 1024;
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth < 400 ? 12.0 : 16.0;
-
-    return Center(
+    final w = MediaQuery.sizeOf(context).width;
+    final horizontal = w < 360 ? 14.0 : 20.0;
+    return Align(
+      alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Padding(
-          padding: padding ?? EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: child,
+          padding: padding ?? EdgeInsets.symmetric(horizontal: horizontal),
+          child: SizedBox(width: double.infinity, child: child),
         ),
       ),
     );

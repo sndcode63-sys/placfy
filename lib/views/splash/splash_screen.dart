@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/brand_mark.dart';
+import '../../core/widgets/bubble_background.dart';
 import '../auth/login_screen.dart';
 import '../auth/workspace_select_screen.dart';
 import '../main_navigation_screen.dart';
@@ -18,32 +19,53 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+    with TickerProviderStateMixin {
+  late final AnimationController _intro;
+  late final AnimationController _ring;
+  late final Animation<double> _logoScale;
+  late final Animation<double> _logoFade;
+  late final Animation<double> _textFade;
+  late final Animation<Offset> _textSlide;
   Timer? _authTimer;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
+    _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1500),
+    )..forward();
+
+    _ring = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat();
+
+    _logoScale = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _intro,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+      ),
+    );
+    _logoFade = CurvedAnimation(
+      parent: _intro,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+    );
+    _textFade = CurvedAnimation(
+      parent: _intro,
+      curve: const Interval(0.35, 0.85, curve: Curves.easeOut),
+    );
+    _textSlide = Tween<Offset>(
+      begin: const Offset(0, 0.25),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _intro,
+        curve: const Interval(0.35, 0.85, curve: Curves.easeOutCubic),
+      ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeIn),
-    );
-
-    _animController.forward();
-
-    // Trigger auth status check after a brief cinematic delay
-    _authTimer = Timer(const Duration(milliseconds: 1400), () {
+    _authTimer = Timer(const Duration(milliseconds: 1800), () {
       if (mounted) {
         context.read<AuthBloc>().add(const CheckAuthStatus());
       }
@@ -53,7 +75,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _authTimer?.cancel();
-    _animController.dispose();
+    _intro.dispose();
+    _ring.dispose();
     super.dispose();
   }
 
@@ -64,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 450),
       ),
     );
   }
@@ -85,94 +108,125 @@ class _SplashScreenState extends State<SplashScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: AnimatedBuilder(
-            animation: _animController,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: child,
-                ),
-              );
-            },
+        backgroundColor: AppColors.bgDeep,
+        body: BubbleBackground(
+          child: SafeArea(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo Container with gradient
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      'P',
-                      style: GoogleFonts.inter(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+                const Spacer(flex: 5),
+                _buildLogo(),
                 const SizedBox(height: 32),
-                // Brand Text
-                Text(
-                  'Placfy',
-                  style: GoogleFonts.inter(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -1,
-                    color: const Color(0xFF1E293B),
+                SlideTransition(
+                  position: _textSlide,
+                  child: FadeTransition(
+                    opacity: _textFade,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Placfy',
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -1.4,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Work. Connect. Grow.',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.2,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Work. Connect. Grow.',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF64748B),
-                    letterSpacing: 1,
+                const Spacer(flex: 4),
+                FadeTransition(
+                  opacity: _textFade,
+                  child: SizedBox(
+                    width: 132,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        minHeight: 4,
+                        backgroundColor: AppColors.borderLight,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.accent,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 64),
-                // Loading indicator
-                const SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                const SizedBox(height: 14),
+                FadeTransition(
+                  opacity: _textFade,
+                  child: Text(
+                    'Autonomous Workforce & AI HRMS',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.4,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Loading...',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
+                const SizedBox(height: 36),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return FadeTransition(
+      opacity: _logoFade,
+      child: ScaleTransition(
+        scale: _logoScale,
+        child: SizedBox(
+          width: 190,
+          height: 190,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _ring,
+                builder: (context, _) {
+                  final v = Curves.easeOut.transform(_ring.value);
+                  return Container(
+                    width: 110 + 80 * v,
+                    height: 110 + 80 * v,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.accent.withValues(
+                          alpha: 0.45 * (1 - v),
+                        ),
+                        width: 1.5,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Container(
+                width: 132,
+                height: 132,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEFF6FF),
+                  border: Border.all(
+                    color: const Color(0xFFDBEAFE),
+                  ),
+                ),
+              ),
+              const BrandTile(size: 96),
+            ],
           ),
         ),
       ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_background.dart';
+import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/responsive_layout.dart';
 import '../../models/auth_user_model.dart';
 import '../../models/workspace_model.dart';
@@ -22,128 +23,114 @@ class WorkspaceSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
+
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
-          Navigator.of(context).pushReplacement(
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+            (route) => false,
           );
         } else if (state is AuthFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.error,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        color: AppColors.statusError, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(state.error)),
+                  ],
+                ),
               ),
-              backgroundColor: AppColors.statusError,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+            );
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF1E293B)),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'Select Workspace',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF1E293B),
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+        backgroundColor: AppColors.bgDeep,
+        body: AppBackground(
+          child: SafeArea(
             child: ResponsiveLayout(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 44,
+                    child: canPop
+                        ? Align(
+                            alignment: Alignment.centerLeft,
+                            child: Material(
+                              color: AppColors.surfaceField,
+                              shape: const CircleBorder(
+                                side: BorderSide(color: AppColors.borderLight),
+                              ),
+                              child: IconButton(
+                                tooltip: 'Back',
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 18,
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Select workspace',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.9,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    'Choose a workspace',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
                     'Workspaces available for ${user.fullName}',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E293B),
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      height: 1.4,
+                      color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: workspaces.length,
-                      itemBuilder: (context, index) {
-                        final workspace = workspaces[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            leading: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.business_center_outlined,
-                                color: Color(0xFF6366F1),
-                                size: 24,
-                              ),
+                    child: BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        final loading = state is AuthLoading;
+                        return Stack(
+                          children: [
+                            ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              itemCount: workspaces.length,
+                              itemBuilder: (context, index) {
+                                final workspace = workspaces[index];
+                                return _WorkspaceTile(
+                                  workspace: workspace,
+                                  onTap: loading
+                                      ? null
+                                      : () => context
+                                          .read<AuthBloc>()
+                                          .add(SelectWorkspace(workspace)),
+                                );
+                              },
                             ),
-                            title: Text(
-                              workspace.name,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1E293B),
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Tap to open this workspace',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: const Color(0xFF64748B),
+                            if (loading)
+                              const Positioned.fill(
+                                child: ColoredBox(
+                                  color: Color(0xB3FFFFFF),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
                                   ),
                                 ),
-                              ],
-                            ),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 16,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            onTap: () {
-                              context.read<AuthBloc>().add(
-                                SelectWorkspace(workspace),
-                              );
-                            },
-                          ),
+                              ),
+                          ],
                         );
                       },
                     ),
@@ -153,6 +140,76 @@ class WorkspaceSelectScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WorkspaceTile extends StatelessWidget {
+  final WorkspaceModel workspace;
+  final VoidCallback? onTap;
+
+  const _WorkspaceTile({required this.workspace, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = workspace.name.trim();
+    final letter = name.isEmpty ? 'W' : name[0].toUpperCase();
+
+    return GlassCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: AppColors.brandGradient,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              letter,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                const Text(
+                  'Tap to open this workspace',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 16,
+            color: AppColors.textMuted,
+          ),
+        ],
       ),
     );
   }

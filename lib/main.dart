@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'blocs/auth/auth_bloc.dart';
@@ -14,6 +15,19 @@ import 'views/splash/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(const [
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.white,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarIconBrightness: Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+  ));
   runApp(const PlacfyApp());
 }
 
@@ -81,10 +95,16 @@ class _PlacfyAppState extends State<PlacfyApp> {
           }
         },
         child: MaterialApp(
-          title: 'Placfy - Autonomous Workforce & AI HRMS',
+          title: 'Placfy',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.lightTheme,
           themeMode: ThemeMode.light,
+          builder: (context, child) => MediaQuery.withClampedTextScaling(
+            minScaleFactor: 0.9,
+            maxScaleFactor: 1.15,
+            child: child ?? const SizedBox.shrink(),
+          ),
           home: const SplashScreen(),
         ),
       ),

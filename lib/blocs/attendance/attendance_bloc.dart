@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../core/service/verification_service.dart';
+import '../../core/utils/api_error.dart';
 import '../../core/storage/secure_storage_service.dart';
 import '../../models/employee_model.dart';
 import '../../models/shift_info_model.dart';
@@ -106,6 +106,7 @@ class AttendanceState extends Equatable {
   final int? activeEntityId;
   final ShiftInfoModel? shiftInfo; // fresh from /today/ every load
   final String? errorMessage; // user-friendly, shown as a snackbar
+  final String? errorTitle; // short heading for the error
   final int errorSeq; // bump so the same message can show twice
   final bool onBreak;
   final String? activeBreakName;
@@ -129,6 +130,7 @@ class AttendanceState extends Equatable {
     this.activeEntityId,
     this.shiftInfo,
     this.errorMessage,
+    this.errorTitle,
     this.errorSeq = 0,
     this.onBreak = false,
     this.activeBreakName,
@@ -179,6 +181,7 @@ class AttendanceState extends Equatable {
     int? activeEntityId,
     ShiftInfoModel? shiftInfo,
     String? errorMessage,
+    String? errorTitle,
     int? errorSeq,
     bool? onBreak,
     String? activeBreakName,
@@ -203,6 +206,7 @@ class AttendanceState extends Equatable {
       activeEntityId: activeEntityId ?? this.activeEntityId,
       shiftInfo: shiftInfo ?? this.shiftInfo,
       errorMessage: errorMessage ?? this.errorMessage,
+      errorTitle: errorTitle ?? this.errorTitle,
       errorSeq: errorSeq ?? this.errorSeq,
       onBreak: clearBreak ? false : (onBreak ?? this.onBreak),
       activeBreakName: clearBreak ? null : (activeBreakName ?? this.activeBreakName),
@@ -229,6 +233,7 @@ class AttendanceState extends Equatable {
     activeEntityId,
     shiftInfo,
     errorMessage,
+    errorTitle,
     errorSeq,
     onBreak,
     activeBreakName,
@@ -294,40 +299,24 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   String _fmt12(DateTime dt) => DateFormat('h:mm a').format(dt);
 
-  void _fail(Emitter<AttendanceState> emit, String message) {
+  void _fail(Emitter<AttendanceState> emit, String message, {String? title}) {
     debugPrint('🚨 [AttendanceBloc] $message');
     emit(state.copyWith(
       isProcessing: false,
       errorMessage: message,
+      errorTitle: title ?? '',
       errorSeq: state.errorSeq + 1,
     ));
   }
 
-  String _friendlyError(Object e) {
-    if (e is VerificationException) return e.message;
-    if (e is DioException) {
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        return 'Could not reach the server. Please check your internet and try again.';
-      }
-      final d = e.response?.data;
-      if (d is Map) {
-        for (final k in ['detail', 'error', 'message']) {
-          if (d[k] != null) return d[k].toString();
-        }
-        // field errors like {"latitude": ["This field is required."]}
-        for (final entry in d.entries) {
-          final v = entry.value;
-          final txt = v is List && v.isNotEmpty ? v.first.toString() : v.toString();
-          return '${entry.key}: $txt';
-        }
-      }
-      if (d is String && d.isNotEmpty && d.length < 200) return d;
-      return 'Something went wrong (code ${e.response?.statusCode ?? '-'}). Please try again.';
+  /// Decodes any exception into a readable title + message and emits it.
+  void _failError(Emitter<AttendanceState> emit, Object e, {String? title}) {
+    if (e is VerificationException) {
+      _fail(emit, e.message, title: title);
+      return;
     }
-    return 'Something went wrong. Please try again.';
+    final info = describeApiError(e, fallbackTitle: title);
+    _fail(emit, info.message, title: info.title);
   }
 
   // ---------- timer ----------
@@ -663,7 +652,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(state.copyWith(isProcessing: false));
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e);
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }
@@ -683,7 +672,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(state.copyWith(isProcessing: false, status: ShiftStatus.paused, elapsedSeconds: frozen));
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e);
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }
@@ -702,7 +691,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(state.copyWith(isProcessing: false, status: ShiftStatus.active));
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e);
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }
@@ -735,7 +724,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(state.copyWith(isProcessing: false, status: ShiftStatus.completed, clearBreak: true));
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e);
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }
@@ -780,7 +769,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       await _saveSnapshot();
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e, title: 'Cannot start break');
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }
@@ -804,7 +793,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       await _saveSnapshot();
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     } catch (e) {
-      _fail(emit, _friendlyError(e));
+      _failError(emit, e, title: 'Cannot end break');
       add(LoadAttendanceEvent(workspaceSlug: slug, entityId: entityId));
     }
   }

@@ -1,67 +1,107 @@
 import 'package:flutter/material.dart';
 
-/// Modern, Vibrant Color Palette for Placfy
+/// Placfy design tokens — fully light theme.
+///
+/// White backgrounds, solid white cards with soft borders, slate text and a
+/// blue brand accent. There are no translucent / glass surfaces any more.
+///
+/// Legacy names (brandPurple, surfaceCard, bgDeep, …) are kept so older
+/// widgets keep compiling; they now resolve to the light palette.
 class AppColors {
-  // Brand Primary (Modern Gradient Purple)
-  static const Color brandPurple = Color(0xFF6366F1);
-  static const Color brandPurpleLight = Color(0xFFF5F3FF);
-  static const Color brandPurpleDark = Color(0xFF4F46E5);
-  static const Color brandGradientStart = Color(0xFF6366F1);
-  static const Color brandGradientEnd = Color(0xFF8B5CF6);
+  AppColors._();
 
-  // Backgrounds (Modern Light Mode)
-  static const Color backgroundLight = Color(0xFFFAFAFA);
+  // ── Brand ────────────────────────────────────────────────────────────────
+  static const Color primary = Color(0xFF2563EB);
+  static const Color primaryDeep = Color(0xFF1D4ED8);
+  static const Color accent = Color(0xFF0891B2);
+  static const Color violet = Color(0xFF7C3AED);
+
+  static const LinearGradient brandGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
+  );
+
+  static const LinearGradient heroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF0891B2)],
+  );
+
+  // ── Backgrounds (all plain white) ────────────────────────────────────────
+  static const Color bgTop = Color(0xFFFFFFFF);
+  static const Color bgMid = Color(0xFFFFFFFF);
+  static const Color bgDeep = Color(0xFFFFFFFF);
+
+  // ── Surfaces (always solid) ──────────────────────────────────────────────
+  static const Color surfaceSheet = Color(0xFFFFFFFF);
+  static const Color surfaceField = Color(0xFFF1F5F9);
+
+  // ── Legacy aliases ───────────────────────────────────────────────────────
+  static const Color brandPurple = primary;
+  static const Color brandPurpleLight = Color(0xFFEFF6FF);
+  static const Color brandPurpleDark = primaryDeep;
+  static const Color brandGradientStart = Color(0xFF3B82F6);
+  static const Color brandGradientEnd = Color(0xFF06B6D4);
+
+  static const Color backgroundLight = Color(0xFFFFFFFF);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
   static const Color surfaceCard = Color(0xFFFFFFFF);
-  static const Color surfaceSubtle = Color(0xFFF3F4F6);
-  static const Color surfaceHover = Color(0xFFE5E7EB);
+  static const Color surfaceSubtle = Color(0xFFF1F5F9);
+  static const Color surfaceHover = Color(0xFFE2E8F0);
 
-  // Borders & Dividers
-  static const Color borderLight = Color(0xFFE5E7EB);
-  static const Color borderSubtle = Color(0xFFD1D5DB);
+  // ── Borders ──────────────────────────────────────────────────────────────
+  static const Color borderLight = Color(0xFFE2E8F0);
+  static const Color borderSubtle = Color(0xFFCBD5E1);
 
-  // Typography (Modern Dark Gray)
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color textMuted = Color(0xFF9CA3AF);
+  // ── Text ─────────────────────────────────────────────────────────────────
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textMuted = Color(0xFF64748B);
 
-  // Status & Accent Badges (Modern Vibrant Colors)
-  static const Color statusSuccess = Color(0xFF10B981);
+  // ── Status (solid tints, readable on white) ──────────────────────────────
+  static const Color statusSuccess = Color(0xFF059669);
   static const Color statusSuccessBg = Color(0xFFD1FAE5);
-  static const Color statusSuccessBorder = Color(0xFF6EE7B7);
+  static const Color statusSuccessBorder = Color(0xFFA7F3D0);
 
-  static const Color statusWarning = Color(0xFFF59E0B);
+  static const Color statusWarning = Color(0xFFD97706);
   static const Color statusWarningBg = Color(0xFFFEF3C7);
-  static const Color statusWarningBorder = Color(0xFFFCD34D);
+  static const Color statusWarningBorder = Color(0xFFFDE68A);
 
-  static const Color statusError = Color(0xFFEF4444);
+  static const Color statusError = Color(0xFFDC2626);
   static const Color statusErrorBg = Color(0xFFFEE2E2);
-  static const Color statusErrorBorder = Color(0xFFFCA5A5);
+  static const Color statusErrorBorder = Color(0xFFFECACA);
 
-  static const Color statusInfo = Color(0xFF3B82F6);
+  static const Color statusInfo = Color(0xFF2563EB);
   static const Color statusInfoBg = Color(0xFFDBEAFE);
-  static const Color statusInfoBorder = Color(0xFF93C5FD);
+  static const Color statusInfoBorder = Color(0xFFBFDBFE);
 
-  // Additional Accents
-  static const Color accentTeal = Color(0xFF14B8A6);
+  static const Color accentTeal = Color(0xFF0D9488);
   static const Color accentTealBg = Color(0xFFCCFBF1);
-  static const Color accentPink = Color(0xFFEC4899);
-  static const Color accentPinkBg = Color(0xFFFBCFE8);
+  static const Color accentPink = Color(0xFFDB2777);
+  static const Color accentPinkBg = Color(0xFFFCE7F3);
 
-  // Enhanced Shadows
+  // ── Shadows (soft, light) ────────────────────────────────────────────────
   static const List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Color(0x1A000000),
-      blurRadius: 12,
-      offset: Offset(0, 4),
+      color: Color(0x140F172A),
+      blurRadius: 20,
+      offset: Offset(0, 6),
     ),
   ];
 
   static const List<BoxShadow> floatingShadow = [
     BoxShadow(
-      color: Color(0x15000000),
-      blurRadius: 20,
-      offset: Offset(0, 8),
+      color: Color(0x1F0F172A),
+      blurRadius: 28,
+      offset: Offset(0, 10),
     ),
   ];
+
+  /// Scrim behind dialogs / bottom sheets.
+  static const Color scrim = Color(0x520F172A);
+
+  /// Solid tint of [color] on white (use instead of a translucent fill).
+  static Color tint(Color color, [double strength = 0.12]) =>
+      Color.alphaBlend(color.withValues(alpha: strength), Colors.white);
 }

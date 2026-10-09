@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:placfy/views/attendance/widgets/attendence_block_view.dart';
 import '../../blocs/attendance/attendance_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../blocs/leave/leave_bloc.dart';
-import '../../models/leave_request_model.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/common_widgets.dart';
+import '../../core/widgets/floating_nav_bar.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../core/widgets/glass_dialog.dart';
 import '../../core/widgets/stat_badge.dart';
-import '../../core/widgets/responsive_layout.dart';
+import '../../models/employee_model.dart';
+import '../../models/leave_request_model.dart';
 import 'widgets/apply_leave_sheet.dart';
+import 'widgets/attendence_block_view.dart';
 
 class AttendanceLeavesView extends StatefulWidget {
   const AttendanceLeavesView({super.key});
@@ -20,8 +23,9 @@ class AttendanceLeavesView extends StatefulWidget {
   State<AttendanceLeavesView> createState() => _AttendanceLeavesViewState();
 }
 
-class _AttendanceLeavesViewState extends State<AttendanceLeavesView> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AttendanceLeavesViewState extends State<AttendanceLeavesView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
 
   @override
   void initState() {
@@ -36,224 +40,128 @@ class _AttendanceLeavesViewState extends State<AttendanceLeavesView> with Single
   }
 
   void _openApplyLeaveSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const ApplyLeaveSheet(),
-    );
+    showGlassSheet<void>(context, (_) => const ApplyLeaveSheet());
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    final onboarded = authState is! Authenticated || authState.isOnboardedEmployee;
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      floatingActionButton: !onboarded ? null : FloatingActionButton.extended(
-        backgroundColor: AppColors.brandPurple,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        icon: const Icon(Icons.add_circle_outline, size: 18),
-        label: const Text('Apply Leave', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-        onPressed: _openApplyLeaveSheet,
-      ),
-      body: ResponsiveLayout(
-        padding: EdgeInsets.zero,
-        child: Column(
-          children: [
-            // Sub-navigation Tabs
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.borderLight),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  color: AppColors.surfaceCard,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: AppColors.cardShadow,
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(20, 8, 20, 6),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceField,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.borderLight),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+            splashBorderRadius: BorderRadius.circular(14),
+            indicator: BoxDecoration(
+              gradient: AppColors.brandGradient,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                labelColor: AppColors.brandPurple,
-                unselectedLabelColor: AppColors.textSecondary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                tabs: const [
-                  Tab(text: 'Attendance'),
-                  Tab(text: 'Leave Management'),
-                ],
-              ),
+              ],
             ),
-
-            // Tab content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildAttendanceTab(),
-                  _buildLeavesTab(),
-                ],
-              ),
-            ),
-          ],
+            labelColor: Colors.white,
+            unselectedLabelColor: AppColors.textSecondary,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+            unselectedLabelStyle:
+                const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+            tabs: const [
+              Tab(height: 42, text: 'Attendance'),
+              Tab(height: 42, text: 'Leaves'),
+            ],
+          ),
         ),
-      ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildAttendanceTab(),
+              _buildLeavesTab(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
+  // ── Attendance tab ────────────────────────────────────────────────────────
   Widget _buildAttendanceTab() {
     return BlocBuilder<AttendanceBloc, AttendanceState>(
       builder: (context, state) {
+        final logs = state.attendanceLogs;
+        final verified = logs.isEmpty
+            ? '--'
+            : '${(100 * logs.where((l) => l.geoVerified).length / logs.length).round()}%';
+
         return RefreshIndicator(
-          color: AppColors.brandPurple,
+          color: AppColors.accent,
+          backgroundColor: AppColors.surfaceSheet,
           onRefresh: () async {
             context.read<AttendanceBloc>().add(const LoadAttendanceEvent());
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              8,
+              20,
+              FloatingNavBar.reserve(context),
+            ),
             children: [
-              // Monthly Summary Cards Row
               Row(
                 children: [
                   Expanded(
                     child: _MiniMetricCard(
                       title: 'Present',
-                      value: '${state.presentDaysCount} Days',
-                      icon: Icons.check_circle_outline,
+                      value: '${state.presentDaysCount}d',
+                      icon: Icons.check_circle_rounded,
                       color: AppColors.statusSuccess,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _MiniMetricCard(
                       title: 'Remote',
-                      value: '${state.remoteDaysCount} Days',
-                      icon: Icons.home_work_outlined,
+                      value: '${state.remoteDaysCount}d',
+                      icon: Icons.home_work_rounded,
                       color: AppColors.statusInfo,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _MiniMetricCard(
-                      title: 'Location Verified',
-                      value: state.attendanceLogs.isEmpty
-                          ? '--'
-                          : '${(100 * state.attendanceLogs.where((l) => l.geoVerified).length / state.attendanceLogs.length).round()}%',
-                      icon: Icons.verified_user_outlined,
-                      color: AppColors.brandPurple,
+                      title: 'Verified',
+                      value: verified,
+                      icon: Icons.verified_user_rounded,
+                      color: AppColors.accent,
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 16),
-
-              const Text(
-                'Attendance History',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              if (state.attendanceLogs.isEmpty)
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.access_time, size: 48, color: AppColors.textMuted),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No attendance records yet',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Check in from the Home tab to get started',
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                      ),
-                    ],
+              const SectionTitle('Attendance history'),
+              if (logs.isEmpty)
+                const GlassCard(
+                  margin: EdgeInsets.zero,
+                  child: EmptyState(
+                    icon: Icons.access_time_rounded,
+                    title: 'No attendance records yet',
+                    message: 'Check in from the Home tab to get started.',
                   ),
                 )
               else
-                ...state.attendanceLogs.map((log) {
-                  return GlassCard(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: log.status == 'Present'
-                                ? AppColors.statusSuccessBg
-                                : AppColors.statusInfoBg,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            log.status == 'Present' ? Icons.fingerprint : Icons.wifi_tethering,
-                            color: log.status == 'Present' ? AppColors.statusSuccess : AppColors.statusInfo,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                log.date,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'In: ${log.punchInTime} • Out: ${log.punchOutTime ?? 'Working'}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            StatBadge(
-                              label: log.status,
-                              color: log.status == 'Present' ? AppColors.statusSuccess : AppColors.statusInfo,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              log.formattedDuration,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-
-              const SizedBox(height: 80),
+                ...logs.map(_buildLogCard),
             ],
           ),
         );
@@ -261,6 +169,88 @@ class _AttendanceLeavesViewState extends State<AttendanceLeavesView> with Single
     );
   }
 
+  Widget _buildLogCard(AttendanceRecord log) {
+    final status = log.status;
+    final s = status.toLowerCase();
+    final Color color;
+    final IconData icon;
+    if (s == 'present') {
+      color = AppColors.statusSuccess;
+      icon = Icons.fingerprint_rounded;
+    } else if (s == 'remote') {
+      color = AppColors.statusInfo;
+      icon = Icons.wifi_tethering_rounded;
+    } else if (s.contains('half')) {
+      color = AppColors.statusWarning;
+      icon = Icons.timelapse_rounded;
+    } else if (s.contains('leave')) {
+      color = AppColors.violet;
+      icon = Icons.beach_access_rounded;
+    } else {
+      color = AppColors.textSecondary;
+      icon = Icons.event_note_rounded;
+    }
+
+    final parsed = DateTime.tryParse(log.date);
+    final dateLabel =
+        parsed != null ? DateFormat('EEE, dd MMM yyyy').format(parsed) : log.date;
+
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          IconBadge(icon: icon, color: color, size: 46),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dateLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'In ${log.punchInTime}  •  Out ${log.punchOutTime ?? 'Working'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              StatBadge(label: status, color: color),
+              const SizedBox(height: 6),
+              Text(
+                log.formattedDuration,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Leaves tab ────────────────────────────────────────────────────────────
   Widget _buildLeavesTab() {
     final authState = context.watch<AuthBloc>().state;
     if (authState is Authenticated && !authState.isOnboardedEmployee) {
@@ -268,182 +258,278 @@ class _AttendanceLeavesViewState extends State<AttendanceLeavesView> with Single
         icon: Icons.beach_access_outlined,
         title: 'Leaves not available yet',
         message:
-        'Leaves are available once your onboarding is complete. Please contact your HR administrator.',
+            'Leaves are available once your onboarding is complete. Please contact your HR administrator.',
       );
     }
+
+    const palette = [
+      AppColors.primary,
+      AppColors.accentTeal,
+      AppColors.violet,
+      AppColors.statusWarning,
+    ];
+
     return BlocBuilder<LeaveBloc, LeaveState>(
       builder: (context, state) {
         return RefreshIndicator(
-          color: AppColors.brandPurple,
+          color: AppColors.accent,
+          backgroundColor: AppColors.surfaceSheet,
           onRefresh: () async {
             context.read<LeaveBloc>().add(const LoadLeavesEvent());
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              8,
+              20,
+              FloatingNavBar.reserve(context),
+            ),
             children: [
-              const Text(
-                'Available Leave Balances',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              Row(
-                children: state.balances.map((balance) {
-                  final ratio = balance.remaining / balance.totalAllocated;
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      child: GlassCard(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              balance.leaveType.split(' ').first,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${balance.remaining.toStringAsFixed(0)} Days',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.brandPurple,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: ratio,
-                                minHeight: 4,
-                                backgroundColor: AppColors.surfaceSubtle,
-                                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.brandPurple),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${balance.used.toStringAsFixed(0)} of ${balance.totalAllocated.toStringAsFixed(0)} used',
-                              style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-                            ),
-                          ],
-                        ),
+              GlassCard(
+                hasGlow: true,
+                margin: EdgeInsets.zero,
+                padding: const EdgeInsets.all(16),
+                onTap: _openApplyLeaveSheet,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.brandGradient,
+                        borderRadius: BorderRadius.circular(15),
                       ),
+                      child: const Icon(Icons.add_rounded,
+                          color: Colors.white, size: 26),
                     ),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 18),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Recent Leave Requests',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    '${state.requests.length} Total',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              ...state.requests.map((req) {
-                Color statusColor;
-                String statusText;
-                if (req.status == LeaveStatus.approved) {
-                  statusColor = AppColors.statusSuccess;
-                  statusText = 'Approved';
-                } else if (req.status == LeaveStatus.rejected) {
-                  statusColor = AppColors.statusError;
-                  statusText = 'Rejected';
-                } else {
-                  statusColor = AppColors.statusWarning;
-                  statusText = 'Pending Approval';
-                }
-
-                final dateStr =
-                    '${DateFormat('dd MMM').format(req.startDate)} - ${DateFormat('dd MMM yyyy').format(req.endDate)}';
-
-                return GlassCard(
-                  margin: const EdgeInsets.symmetric(vertical: 5),
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            req.leaveType,
-                            style: const TextStyle(
-                              fontSize: 13,
+                            'Apply for leave',
+                            style: TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
-                          StatBadge(
-                            label: statusText,
-                            color: statusColor,
+                          SizedBox(height: 2),
+                          Text(
+                            'Send a request to your manager',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        dateStr,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brandPurple,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        req.reason,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (req.approvedBy != null) ...[
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            const Icon(Icons.check_circle_outline, size: 12, color: AppColors.statusSuccess),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Approved by: ${req.approvedBy}',
-                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        size: 15, color: AppColors.textMuted),
+                  ],
+                ),
+              ),
+              const SectionTitle('Leave balances'),
+              if (state.balances.isEmpty)
+                const GlassCard(
+                  margin: EdgeInsets.zero,
+                  child: EmptyState(
+                    icon: Icons.event_available_rounded,
+                    title: 'No leave balances',
+                    message: 'Your leave balances will appear here.',
                   ),
-                );
-              }),
-
-              const SizedBox(height: 80),
+                )
+              else
+                SizedBox(
+                  height: 140,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    itemCount: state.balances.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, i) {
+                      final b = state.balances[i];
+                      final color = palette[i % palette.length];
+                      final ratio = b.totalAllocated > 0
+                          ? (b.remaining / b.totalAllocated).clamp(0.0, 1.0)
+                          : 0.0;
+                      return SizedBox(
+                        width: 156,
+                        child: GlassCard(
+                          margin: EdgeInsets.zero,
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                b.leaveType,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${b.remaining.toStringAsFixed(0)} days',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                  color: color,
+                                ),
+                              ),
+                              const Spacer(),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: ratio,
+                                  minHeight: 6,
+                                  backgroundColor:
+                                      AppColors.borderLight,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(color),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${b.used.toStringAsFixed(0)} of ${b.totalAllocated.toStringAsFixed(0)} used',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              SectionTitle(
+                'Recent requests',
+                trailing: Text(
+                  '${state.requests.length} total',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              if (state.requests.isEmpty)
+                const GlassCard(
+                  margin: EdgeInsets.zero,
+                  child: EmptyState(
+                    icon: Icons.inbox_rounded,
+                    title: 'No leave requests',
+                    message: 'Requests you submit will show up here.',
+                  ),
+                )
+              else
+                ...state.requests.map(_buildRequestCard),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRequestCard(LeaveRequestModel req) {
+    final Color statusColor;
+    final String statusText;
+    if (req.status == LeaveStatus.approved) {
+      statusColor = AppColors.statusSuccess;
+      statusText = 'Approved';
+    } else if (req.status == LeaveStatus.rejected) {
+      statusColor = AppColors.statusError;
+      statusText = 'Rejected';
+    } else {
+      statusColor = AppColors.statusWarning;
+      statusText = 'Pending';
+    }
+
+    final dateStr =
+        '${DateFormat('dd MMM').format(req.startDate)} - ${DateFormat('dd MMM yyyy').format(req.endDate)}';
+
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  req.leaveType,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              StatBadge(label: statusText, color: statusColor),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.calendar_month_rounded,
+                  size: 15, color: AppColors.accent),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  '$dateStr  •  ${req.daysCount.toStringAsFixed(req.daysCount % 1 == 0 ? 0 : 1)}d',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (req.reason.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              req.reason,
+              style: const TextStyle(
+                fontSize: 12.5,
+                height: 1.45,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          if (req.approvedBy != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.check_circle_outline_rounded,
+                    size: 14, color: AppColors.statusSuccess),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Approved by ${req.approvedBy}',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -465,25 +551,32 @@ class _MiniMetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       margin: EdgeInsets.zero,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: color,
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
-          const SizedBox(height: 1),
+          const SizedBox(height: 2),
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               color: AppColors.textSecondary,
             ),
           ),
