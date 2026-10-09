@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,15 +22,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _devEmail = 'employee@testing.com';
-  static const _devPassword = 'Password123!';
-
   final _formKey = GlobalKey<FormState>();
-  // Test credentials are pre-filled in debug builds only.
-  final _emailController =
-      TextEditingController(text: kDebugMode ? _devEmail : '');
-  final _passwordController =
-      TextEditingController(text: kDebugMode ? _devPassword : '');
+
+  // Fields are completely empty now
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
@@ -45,19 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            LoginSubmitted(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        LoginSubmitted(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
-  }
-
-  void _fillTestCredentials() {
-    setState(() {
-      _emailController.text = _devEmail;
-      _passwordController.text = _devPassword;
-    });
   }
 
   @override
@@ -105,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Center(
                 child: SingleChildScrollView(
                   keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  ScrollViewKeyboardDismissBehavior.onDrag,
                   child: ResponsiveLayout(
                     maxWidth: 460,
                     padding: const EdgeInsets.symmetric(
@@ -148,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 children: [
                                   AppTextField(
                                     label: 'Email',
-                                    hint: 'you@company.com',
+                                    hint: 'Entre Email',
                                     icon: Icons.mail_outline_rounded,
                                     controller: _emailController,
                                     keyboardType: TextInputType.emailAddress,
@@ -168,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const SizedBox(height: 18),
                                   AppTextField(
                                     label: 'Password',
-                                    hint: 'Enter your password',
+                                    hint: 'Enter password',
                                     icon: Icons.lock_outline_rounded,
                                     controller: _passwordController,
                                     obscureText: _obscurePassword,
@@ -189,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         color: AppColors.textMuted,
                                       ),
                                       onPressed: () => setState(() =>
-                                          _obscurePassword = !_obscurePassword),
+                                      _obscurePassword = !_obscurePassword),
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -211,22 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     },
                                   ),
-                                  if (kDebugMode) ...[
-                                    const SizedBox(height: 10),
-                                    TextButton.icon(
-                                      onPressed: _fillTestCredentials,
-                                      icon: const Icon(
-                                          Icons.bolt_rounded, size: 16),
-                                      label: const Text('Fill test account'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: AppColors.accent,
-                                        textStyle: const TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
                                 ],
                               ),
                             ),
